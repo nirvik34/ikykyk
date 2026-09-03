@@ -68,7 +68,7 @@ fun ProcessingScreen(
         PipelineStage.GENERATING_COLLAGE -> "Stitching editorial story grid preview..."
         PipelineStage.COMPLETED -> "Your collage is ready to view!"
         PipelineStage.ERROR -> progress.message
-        else -> "Working AI magic..."
+        else -> "Analyzing video..."
     }
 
     val progressFraction by animateFloatAsState(
@@ -90,23 +90,8 @@ fun ProcessingScreen(
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.Center
         ) {
-            Box(
-                modifier = Modifier
-                    .size(36.dp)
-                    .clip(CircleShape)
-                    .background(Color.Black.copy(alpha = 0.05f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "AI",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = InkBlack
-                )
-            }
-
             Text(
                 text = "PROCESSING",
                 fontSize = 12.sp,
@@ -114,8 +99,6 @@ fun ProcessingScreen(
                 letterSpacing = 2.sp,
                 color = InkBlack.copy(alpha = 0.6f)
             )
-
-            Spacer(modifier = Modifier.size(36.dp))
         }
 
         Spacer(modifier = Modifier.height(36.dp))
