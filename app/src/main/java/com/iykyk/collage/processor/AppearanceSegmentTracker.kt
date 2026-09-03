@@ -33,9 +33,9 @@ class AppearanceSegmentTracker {
                     val lastFace = track.frames.last()
                     val timeDeltaMs = face.timestampMs - lastFace.timestampMs
 
-                    if (timeDeltaMs <= 600L) {
+                    if (timeDeltaMs <= 1200L) {
                         val iou = calculateIoU(face.boundingBox, lastFace.boundingBox)
-                        if (iou > 0.22f && iou > bestIou) {
+                        if (iou > 0.15f && iou > bestIou) {
                             bestIou = iou
                             bestTrackIdx = trackIdx
                         }
@@ -54,7 +54,7 @@ class AppearanceSegmentTracker {
                 if (!assignedTrackIndices.contains(trackIdx)) {
                     val lastTimestamp = track.frames.last().timestampMs
                     val currentTimestamp = facesInFrame.firstOrNull()?.timestampMs ?: 0L
-                    if (currentTimestamp - lastTimestamp > 600L) {
+                    if (currentTimestamp - lastTimestamp > 1200L) {
                         tracksToRemove.add(trackIdx)
                     }
                 }
@@ -100,7 +100,7 @@ class AppearanceSegmentTracker {
         val durationMs = endMs - startMs
 
         val avgSharpness = track.frames.map { it.sharpnessScore }.average()
-        if (avgSharpness < 5.0) {
+        if (avgSharpness < 2.0) {
             return null
         }
 

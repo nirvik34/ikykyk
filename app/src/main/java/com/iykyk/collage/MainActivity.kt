@@ -95,6 +95,8 @@ fun MainContent(viewModel: MainViewModel) {
                 result = uiState.result!!,
                 savedUriName = uiState.savedGalleryUri?.toString(),
                 activeAuditPerson = uiState.activeAuditPerson,
+                selectedTemplate = uiState.selectedTemplate,
+                onTemplateChanged = { template -> viewModel.changeLayoutTemplate(context, template) },
                 onSaveToGallery = { viewModel.saveCollageToGallery(context) },
                 onShareCollage = { viewModel.shareCollage(context) },
                 onSelectAuditPerson = { person -> viewModel.setAuditPerson(person) },

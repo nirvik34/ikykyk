@@ -1,15 +1,22 @@
 package com.iykyk.collage.processor
 
+import android.util.Log
 import com.iykyk.collage.model.AppearanceTrack
 import kotlin.math.sqrt
 
 class IdentityClusterer(
-    private val distanceThreshold: Float = 0.28f 
+    private val distanceThreshold: Float = 0.45f
 ) {
+
+    companion object {
+        private const val TAG = "IdentityClusterer"
+    }
 
     fun clusterIdentities(tracks: List<AppearanceTrack>): List<List<AppearanceTrack>> {
         if (tracks.isEmpty()) return emptyList()
         if (tracks.size == 1) return listOf(tracks)
+
+        Log.d(TAG, "Clustering ${tracks.size} tracks with threshold=$distanceThreshold")
 
         for (track in tracks) {
             val embeddings = track.frames.mapNotNull { it.embedding }
@@ -21,8 +28,12 @@ class IdentityClusterer(
                         mean[i] += emb[i]
                     }
                 }
+                for (i in 0 until dim) {
+                    mean[i] /= embeddings.size.toFloat()
+                }
                 track.meanEmbedding = l2Normalize(mean)
             }
+            Log.d(TAG, "Track ${track.trackId}: ${track.frames.size} frames, embedding=${track.meanEmbedding != null}")
         }
 
         val clusters = tracks.map { mutableListOf(it) }.toMutableList()
@@ -43,7 +54,10 @@ class IdentityClusterer(
                 }
             }
 
+            Log.d(TAG, "Best merge candidate: distance=$minDistance (threshold=$distanceThreshold)")
+
             if (bestI != -1 && bestJ != -1 && minDistance <= distanceThreshold) {
+                Log.d(TAG, "Merging cluster $bestI and $bestJ (distance=$minDistance)")
                 clusters[bestI].addAll(clusters[bestJ])
                 clusters.removeAt(bestJ)
             } else {
@@ -51,6 +65,7 @@ class IdentityClusterer(
             }
         }
 
+        Log.d(TAG, "Final clusters: ${clusters.size}")
         return clusters
     }
 
@@ -62,21 +77,21 @@ class IdentityClusterer(
             return Float.MAX_VALUE
         }
 
-        var totalDist = 0.0f
-        var count = 0
+        var minDist = Float.MAX_VALUE
 
         for (t1 in cluster1) {
             val emb1 = t1.meanEmbedding ?: continue
             for (t2 in cluster2) {
                 val emb2 = t2.meanEmbedding ?: continue
                 val dist = cosineDistance(emb1, emb2)
-                totalDist += dist
-                count++
+                if (dist < minDist) {
+                    minDist = dist
+                }
             }
         }
 
-        if (count == 0) return 1.0f
-        return totalDist / count
+        if (minDist == Float.MAX_VALUE) return 1.0f
+        return minDist
     }
 
     private fun hasCoOccurrence(
@@ -90,11 +105,17 @@ class IdentityClusterer(
 
     private fun cosineDistance(emb1: FloatArray, emb2: FloatArray): Float {
         var dot = 0.0f
+        var norm1 = 0.0f
+        var norm2 = 0.0f
         val len = minOf(emb1.size, emb2.size)
         for (i in 0 until len) {
             dot += emb1[i] * emb2[i]
+            norm1 += emb1[i] * emb1[i]
+            norm2 += emb2[i] * emb2[i]
         }
-        val sim = dot.coerceIn(-1.0f, 1.0f)
+        val denom = sqrt(norm1) * sqrt(norm2)
+        if (denom < 1e-8f) return 1.0f
+        val sim = (dot / denom).coerceIn(-1.0f, 1.0f)
         return 1.0f - sim
     }
 

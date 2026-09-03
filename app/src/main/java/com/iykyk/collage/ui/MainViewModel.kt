@@ -2,20 +2,23 @@ package com.iykyk.collage.ui
 
 import android.content.Context
 import android.net.Uri
-import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.iykyk.collage.collage.CollageRenderer
+import com.iykyk.collage.model.LayoutTemplate
 import com.iykyk.collage.model.PersonIdentity
 import com.iykyk.collage.model.PipelineStage
 import com.iykyk.collage.model.ProcessingProgress
 import com.iykyk.collage.model.CollageResult
 import com.iykyk.collage.processor.VideoProcessorRepository
 import com.iykyk.collage.util.MediaStoreUtils
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 data class MainUiState(
     val selectedVideoUri: Uri? = null,
@@ -25,7 +28,8 @@ data class MainUiState(
     val result: CollageResult? = null,
     val savedGalleryUri: Uri? = null,
     val activeAuditPerson: PersonIdentity? = null,
-    val toastMessage: String? = null
+    val toastMessage: String? = null,
+    val selectedTemplate: LayoutTemplate = LayoutTemplate.EDITORIAL
 )
 
 class MainViewModel : ViewModel() {
@@ -34,6 +38,7 @@ class MainViewModel : ViewModel() {
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
 
     private var repository: VideoProcessorRepository? = null
+    private var collageRenderer: CollageRenderer? = null
 
     fun selectVideo(uri: Uri, name: String? = null) {
         _uiState.update {
@@ -50,11 +55,12 @@ class MainViewModel : ViewModel() {
         val uri = _uiState.value.selectedVideoUri ?: return
         val repo = VideoProcessorRepository(context.applicationContext)
         this.repository = repo
+        this.collageRenderer = CollageRenderer(context.applicationContext)
 
         _uiState.update { it.copy(isProcessing = true, result = null) }
 
         viewModelScope.launch {
-            
+
             launch {
                 repo.progress.collect { prog ->
                     _uiState.update { state -> state.copy(progress = prog) }
@@ -66,7 +72,37 @@ class MainViewModel : ViewModel() {
             _uiState.update {
                 it.copy(
                     isProcessing = false,
-                    result = collageResult
+                    result = collageResult,
+                    selectedTemplate = LayoutTemplate.EDITORIAL
+                )
+            }
+        }
+    }
+
+    fun changeLayoutTemplate(context: Context, template: LayoutTemplate) {
+        val currentResult = _uiState.value.result ?: return
+        if (template == _uiState.value.selectedTemplate) return
+
+        val renderer = collageRenderer ?: CollageRenderer(context.applicationContext).also {
+            collageRenderer = it
+        }
+
+        viewModelScope.launch {
+            val newBitmap = withContext(Dispatchers.Default) {
+                renderer.renderCollage(
+                    identities = currentResult.identities,
+                    layoutTemplate = template
+                )
+            }
+
+            _uiState.update {
+                it.copy(
+                    selectedTemplate = template,
+                    result = currentResult.copy(
+                        collageBitmap = newBitmap,
+                        layoutTemplate = template
+                    ),
+                    savedGalleryUri = null
                 )
             }
         }

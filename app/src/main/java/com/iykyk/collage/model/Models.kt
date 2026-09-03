@@ -67,6 +67,13 @@ data class PersonIdentity(
     val totalVisibleDurationMs: Long get() = appearances.sumOf { it.durationMs }
 }
 
+enum class LayoutTemplate(val label: String) {
+    EDITORIAL("Editorial"),
+    FILM_STRIP("Film Strip"),
+    POLAROID("Polaroid"),
+    FULL_BLEED("Full Bleed")
+}
+
 enum class PipelineStage {
     IDLE,
     EXTRACTING_FRAMES,
@@ -91,6 +98,7 @@ data class ProcessingProgress(
 
 data class CollageResult(
     val identities: List<PersonIdentity>,
-    val collageBitmap: Bitmap
+    val collageBitmap: Bitmap,
+    val layoutTemplate: LayoutTemplate = LayoutTemplate.EDITORIAL
 )
 

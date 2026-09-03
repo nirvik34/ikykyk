@@ -2,7 +2,20 @@ package com.iykyk.collage.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val SoftBlack = Color(0xFF080808)
+// Antigravity / Minimalist Design System Tokens (from design.md)
+val CanvasBg = Color(0xFFFAF9F6)
+val InkBlack = Color(0xFF171717)
+val LimeBlock = Color(0xFFD9FF72)
+val SurfaceCard = Color(0xFFFFFFFF)
+val OutlineBorder = Color(0xFFE5E5E0)
+val SubtleText = Color(0xFF737373)
+val ProcessingLilac = Color(0xFFDCD2FF)
+val PeachAccent = Color(0xFFFFD1C1)
+val SurfaceVariant = Color(0xFFF0EEEE)
+val OnSurfaceVariant = Color(0xFF666666)
+
+// Cameo Palette Tokens
+val SoftBlack = Color(0xFF171717)
 val Charcoal = Color(0xFF242424)
 
 val HotPink = Color(0xFFFF2490)
@@ -26,3 +39,4 @@ val Purple500 = SkyBlue
 val Emerald400 = LimeGreen
 val GlassSurface = Charcoal
 val GlassBorder = Color(0x1FA8A8A8)
+
