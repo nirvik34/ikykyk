@@ -1,8 +1,8 @@
-# Design System: IYKYK (If You Know, You Know)
+# Design System: cameo
 
 ## 🎨 1. Visual Style: Playful 3D Social / Candy UI
 
-**IYKYK** is a playful social utility designed like a party game meets Snapchat sticker app. 
+**cameo** is a playful social utility designed like a party game meets Snapchat sticker app. 
 
 ### Visual Keywords
 **Playful · Social · Bold · Friendly · Fast · Dark · Candy-Colored · Gen-Z**

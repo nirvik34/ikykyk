@@ -78,7 +78,7 @@ class MainViewModel : ViewModel() {
         val cleanName = videoName.replace(" ", "_").lowercase()
 
         viewModelScope.launch {
-            val savedUri = MediaStoreUtils.saveBitmapToGallery(context, bitmap, "iykyk_$cleanName")
+            val savedUri = MediaStoreUtils.saveBitmapToGallery(context, bitmap, "cameo_$cleanName")
             if (savedUri != null) {
                 _uiState.update { it.copy(savedGalleryUri = savedUri, toastMessage = "Collage saved to Gallery!") }
             } else {

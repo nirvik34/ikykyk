@@ -57,7 +57,7 @@ class CollageRenderer(private val context: Context) {
             typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
             textSize = 58f
         }
-        canvas.drawText("iykyk", 80f, headerTop + 40f, textPaint)
+        canvas.drawText("cameo", 80f, headerTop + 40f, textPaint)
 
         val subtitlePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.parseColor("#FF2490") // HotPink Accent
@@ -126,7 +126,7 @@ class CollageRenderer(private val context: Context) {
             textAlign = Paint.Align.CENTER
         }
         canvas.drawText(
-            "created on-device with iykyk • on-device ml",
+            "created on-device with cameo • on-device ml",
             canvasWidth / 2f, canvasHeight - 70f, footerPaint
         )
 

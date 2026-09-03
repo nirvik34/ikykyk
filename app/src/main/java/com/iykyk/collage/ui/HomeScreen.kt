@@ -3,6 +3,7 @@ package com.iykyk.collage.ui
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -37,10 +38,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.iykyk.collage.R
 import com.iykyk.collage.ui.theme.Charcoal
 import com.iykyk.collage.ui.theme.HotPink
 import com.iykyk.collage.ui.theme.LimeGreen
@@ -78,9 +81,19 @@ fun HomeScreen(
     ) {
         Spacer(modifier = Modifier.height(28.dp))
 
-        // Playful App Title
+        // Playful App Logo & Title
+        Image(
+            painter = painterResource(id = R.drawable.ic_cameo_logo),
+            contentDescription = "cameo logo",
+            modifier = Modifier
+                .size(92.dp)
+                .clip(RoundedCornerShape(22.dp))
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
         Text(
-            text = "iykyk",
+            text = "cameo",
             fontSize = 44.sp,
             fontWeight = FontWeight.Black,
             color = HotPink
