@@ -56,19 +56,15 @@ class MLKitFaceDetector {
         val rightEyeOpen = face.rightEyeOpenProbability ?: 0.5f
         val smile = face.smilingProbability ?: 0.0f
 
-        // Frontality score: 1.0 = perfect frontal, decreases with head rotation
         val poseAngleSum = Math.abs(yaw) + Math.abs(pitch) + Math.abs(roll) * 0.5f
         val frontalityScore = kotlin.math.max(0.0f, 1.0f - (poseAngleSum / 70.0f))
 
-        // Eyes open average
         val eyesOpenScore = (leftEyeOpen + rightEyeOpen) / 2.0f
 
-        // Bounding box margin check (penalize faces partially cropped by frame edge)
         val edgeMarginX = kotlin.math.min(bbox.left, frameBitmap.width - bbox.right)
         val edgeMarginY = kotlin.math.min(bbox.top, frameBitmap.height - bbox.bottom)
         val edgeIntegrityScore = if (edgeMarginX < 5 || edgeMarginY < 5) 0.3f else 1.0f
 
-        // Crop face for sharpness calculation
         val faceCrop = try {
             val left = kotlin.math.max(0, bbox.left)
             val top = kotlin.math.max(0, bbox.top)
@@ -86,7 +82,6 @@ class MLKitFaceDetector {
             faceCrop.recycle()
         }
 
-        // Weighted Overall Quality Score
         val overallQuality = (
             frontalityScore * 0.35f +
             eyesOpenScore * 0.30f +

@@ -13,8 +13,8 @@ import kotlin.math.sqrt
 class TFLiteEmbeddingExtractor(private val context: Context) {
 
     private var interpreter: Interpreter? = null
-    private val modelInputSize = 112 // MobileFaceNet standard input width/height
-    private var outputSize = 192    // MobileFaceNet embedding vector dimension
+    private val modelInputSize = 112 
+    private var outputSize = 192    
 
     init {
         try {
@@ -40,9 +40,6 @@ class TFLiteEmbeddingExtractor(private val context: Context) {
         }
     }
 
-    /**
-     * Extracts L2-normalized 192-dimensional face embedding vector for the given cropped face bitmap.
-     */
     fun extractEmbedding(faceBitmap: Bitmap): FloatArray {
         val interp = interpreter ?: return FloatArray(outputSize) { 0f }
 
@@ -73,7 +70,6 @@ class TFLiteEmbeddingExtractor(private val context: Context) {
             val g = (value shr 8) and 0xFF
             val b = value and 0xFF
 
-            // Normalize pixels to [-1, 1]
             imgData.putFloat((r - 127.5f) / 128.0f)
             imgData.putFloat((g - 127.5f) / 128.0f)
             imgData.putFloat((b - 127.5f) / 128.0f)

@@ -15,13 +15,10 @@ import java.io.OutputStream
 
 object MediaStoreUtils {
 
-    /**
-     * Saves bitmap collage directly to device Pictures / Gallery under "iykyk Collages".
-     */
     fun saveBitmapToGallery(
         context: Context,
         bitmap: Bitmap,
-        title: String = "iykyk_collage_${System.currentTimeMillis()}"
+        title: String = "cameo_collage_${System.currentTimeMillis()}"
     ): Uri? {
         val filename = "$title.png"
 
@@ -29,7 +26,7 @@ object MediaStoreUtils {
             val contentValues = ContentValues().apply {
                 put(MediaStore.MediaColumns.DISPLAY_NAME, filename)
                 put(MediaStore.MediaColumns.MIME_TYPE, "image/png")
-                put(MediaStore.MediaColumns.RELATIVE_PATH, "${Environment.DIRECTORY_PICTURES}/iykyk Collages")
+                put(MediaStore.MediaColumns.RELATIVE_PATH, "${Environment.DIRECTORY_PICTURES}/cameo Collages")
                 put(MediaStore.MediaColumns.IS_PENDING, 1)
             }
 
@@ -47,7 +44,7 @@ object MediaStoreUtils {
             }
         } else {
             val imagesDir = Environment.getExternalStoragePublicDirectory(
-                "${Environment.DIRECTORY_PICTURES}/iykyk Collages"
+                "${Environment.DIRECTORY_PICTURES}/cameo Collages"
             )
             if (!imagesDir.exists()) {
                 imagesDir.mkdirs()
@@ -61,14 +58,11 @@ object MediaStoreUtils {
         return null
     }
 
-    /**
-     * Shares collage bitmap via standard Android Share Sheet using FileProvider.
-     */
     fun shareBitmap(context: Context, bitmap: Bitmap) {
         try {
             val cachePath = File(context.cacheBufferDir, "shared_collages")
             cachePath.mkdirs()
-            val file = File(cachePath, "iykyk_collage_${System.currentTimeMillis()}.png")
+            val file = File(cachePath, "cameo_collage_${System.currentTimeMillis()}.png")
 
             FileOutputStream(file).use { out ->
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)

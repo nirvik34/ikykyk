@@ -1,4 +1,4 @@
-# 📋 IYKYK — Project Issues & Status
+# 📋 cameo — Project Issues & Status
 
 | ID | Title / Feature | Category | Status |
 | :--- | :--- | :--- | :--- |

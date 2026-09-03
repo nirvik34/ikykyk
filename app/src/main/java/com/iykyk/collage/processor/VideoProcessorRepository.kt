@@ -32,7 +32,7 @@ class VideoProcessorRepository(private val context: Context) {
 
     suspend fun processVideo(videoUri: Uri): CollageResult? = withContext(Dispatchers.Default) {
         try {
-            // Stage 1: Frame Extraction
+            
             _progress.value = ProcessingProgress(
                 stage = PipelineStage.EXTRACTING_FRAMES,
                 progressFraction = 0.05f,
@@ -54,7 +54,6 @@ class VideoProcessorRepository(private val context: Context) {
                 throw IllegalStateException("Failed to extract video frames.")
             }
 
-            // Stage 2: ML Kit Face Detection
             _progress.value = ProcessingProgress(
                 stage = PipelineStage.DETECTING_FACES,
                 progressFraction = 0.30f,
@@ -85,7 +84,6 @@ class VideoProcessorRepository(private val context: Context) {
                 )
             }
 
-            // Stage 3: Appearance Tracking (Segment Association)
             _progress.value = ProcessingProgress(
                 stage = PipelineStage.TRACKING_APPEARANCES,
                 progressFraction = 0.58f,
@@ -94,7 +92,6 @@ class VideoProcessorRepository(private val context: Context) {
 
             val rawTracks = segmentTracker.trackAppearances(frameFacesMap)
 
-            // Stage 4: TFLite Face Embeddings Extraction
             _progress.value = ProcessingProgress(
                 stage = PipelineStage.COMPUTING_EMBEDDINGS,
                 progressFraction = 0.65f,
@@ -119,7 +116,6 @@ class VideoProcessorRepository(private val context: Context) {
                 }
             }
 
-            // Stage 5: Identity Clustering
             _progress.value = ProcessingProgress(
                 stage = PipelineStage.CLUSTERING_IDENTITIES,
                 progressFraction = 0.80f,
@@ -128,7 +124,6 @@ class VideoProcessorRepository(private val context: Context) {
 
             val clusteredTrackGroups = identityClusterer.clusterIdentities(rawTracks)
 
-            // Stage 6: Representative Shot Selection
             _progress.value = ProcessingProgress(
                 stage = PipelineStage.SELECTING_SHOTS,
                 progressFraction = 0.90f,
@@ -147,7 +142,6 @@ class VideoProcessorRepository(private val context: Context) {
                 identities.add(identity)
             }
 
-            // Stage 7: Generate Collage Bitmap
             _progress.value = ProcessingProgress(
                 stage = PipelineStage.GENERATING_COLLAGE,
                 progressFraction = 0.95f,

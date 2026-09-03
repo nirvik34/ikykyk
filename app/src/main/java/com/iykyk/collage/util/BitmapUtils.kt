@@ -12,10 +12,6 @@ import kotlin.math.pow
 
 object BitmapUtils {
 
-    /**
-     * Crops a generous portrait region around the face bounding box.
-     * Prevents tight cropping to maintain high visual quality.
-     */
     fun cropGenerousPortrait(
         source: Bitmap,
         faceRect: Rect,
@@ -35,17 +31,12 @@ object BitmapUtils {
         var right = min(source.width, faceRect.right + sidePadding)
         var bottom = min(source.height, faceRect.bottom + bottomPadding)
 
-        // Ensure valid crop dimensions
         val cropW = max(1, right - left)
         val cropH = max(1, bottom - top)
 
         return Bitmap.createBitmap(source, left, top, cropW, cropH)
     }
 
-    /**
-     * Estimates image sharpness using Laplacian variance approximation.
-     * Higher score = crisper image, lower score = motion blur / out of focus.
-     */
     fun calculateSharpnessScore(bitmap: Bitmap): Float {
         try {
             val width = min(bitmap.width, 120)
@@ -71,7 +62,7 @@ object BitmapUtils {
             for (y in 1 until height - 1) {
                 for (x in 1 until width - 1) {
                     val idx = y * width + x
-                    // 4-neighbor Laplacian kernel: [0, 1, 0; 1, -4, 1; 0, 1, 0]
+                    
                     val laplacian = (
                         gray[idx - width] +
                         gray[idx + width] +
@@ -98,9 +89,6 @@ object BitmapUtils {
         }
     }
 
-    /**
-     * Scales bitmap to specified target width and height.
-     */
     fun scaleBitmap(bitmap: Bitmap, targetWidth: Int, targetHeight: Int): Bitmap {
         return Bitmap.createScaledBitmap(bitmap, targetWidth, targetHeight, true)
     }

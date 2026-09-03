@@ -8,10 +8,6 @@ import com.iykyk.collage.util.BitmapUtils
 
 class RepresentativeShotSelector {
 
-    /**
-     * Selects the highest quality representative face frame for a person identity
-     * and generates a generous, high-resolution portrait crop.
-     */
     fun selectRepresentativeShot(
         personId: Int,
         personName: String,
@@ -19,11 +15,9 @@ class RepresentativeShotSelector {
     ): PersonIdentity {
         val allFrames = appearances.flatMap { it.frames }
 
-        // Find frame with highest overall quality score
         val bestFrame = allFrames.maxByOrNull { calculateDetailedScore(it) }
             ?: appearances.first().frames.first()
 
-        // Generate generous portrait crop (including hair, chin, and upper shoulders)
         val sourceBitmap = bestFrame.frameBitmap
             ?: throw IllegalStateException("Frame bitmap is null for representative shot")
 
@@ -47,18 +41,15 @@ class RepresentativeShotSelector {
     private fun calculateDetailedScore(frame: FaceFrameInfo): Float {
         var score = frame.overallQualityScore
 
-        // Heavy penalty for closed eyes (< 0.25 probability)
         val avgEyeOpen = (frame.leftEyeOpenProb + frame.rightEyeOpenProb) / 2.0f
         if (avgEyeOpen < 0.25f) {
             score *= 0.2f
         }
 
-        // Heavy penalty for extreme side/up/down angles (yaw/pitch > 35 deg)
         if (Math.abs(frame.headEulerAngleY) > 35f || Math.abs(frame.headEulerAngleX) > 30f) {
             score *= 0.4f
         }
 
-        // Bonus for smiling / pleasant expression
         if (frame.smileProb > 0.4f) {
             score += 0.15f
         }

@@ -3,18 +3,15 @@ package com.iykyk.collage.model
 import android.graphics.Bitmap
 import android.graphics.Rect
 
-/**
- * Metadata for a single face detected in a specific video frame.
- */
 data class FaceFrameInfo(
     val frameIndex: Int,
     val timestampMs: Long,
     val boundingBox: Rect,
     val frameWidth: Int,
     val frameHeight: Int,
-    val headEulerAngleY: Float, // Yaw (left/right rotation)
-    val headEulerAngleZ: Float, // Roll (tilt)
-    val headEulerAngleX: Float, // Pitch (up/down)
+    val headEulerAngleY: Float, 
+    val headEulerAngleZ: Float, 
+    val headEulerAngleX: Float, 
     val leftEyeOpenProb: Float,
     val rightEyeOpenProb: Float,
     val smileProb: Float,
@@ -37,10 +34,6 @@ data class FaceFrameInfo(
     }
 }
 
-/**
- * A continuous visible appearance segment of a face in time.
- * One appearance = one contiguous segment from entry to exit.
- */
 data class AppearanceTrack(
     val trackId: Int,
     val frames: List<FaceFrameInfo>,
@@ -63,12 +56,9 @@ data class AppearanceTrack(
     }
 }
 
-/**
- * Clustered unique identity representing one person in the video.
- */
 data class PersonIdentity(
     val id: Int,
-    val name: String, // e.g. "Person 1"
+    val name: String, 
     val appearances: List<AppearanceTrack>,
     val bestShot: FaceFrameInfo,
     val croppedFaceBitmap: Bitmap
@@ -77,9 +67,6 @@ data class PersonIdentity(
     val totalVisibleDurationMs: Long get() = appearances.sumOf { it.durationMs }
 }
 
-/**
- * Progress states for the video processing engine.
- */
 enum class PipelineStage {
     IDLE,
     EXTRACTING_FRAMES,

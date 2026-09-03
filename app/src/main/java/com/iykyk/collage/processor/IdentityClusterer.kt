@@ -4,18 +4,13 @@ import com.iykyk.collage.model.AppearanceTrack
 import kotlin.math.sqrt
 
 class IdentityClusterer(
-    private val distanceThreshold: Float = 0.40f // Cosine distance threshold for MobileFaceNet embeddings
+    private val distanceThreshold: Float = 0.40f 
 ) {
 
-    /**
-     * Clusters appearance tracks into distinct unique person identities.
-     * Returns a list of clusters (each cluster is a list of AppearanceTracks for 1 person).
-     */
     fun clusterIdentities(tracks: List<AppearanceTrack>): List<List<AppearanceTrack>> {
         if (tracks.isEmpty()) return emptyList()
         if (tracks.size == 1) return listOf(tracks)
 
-        // Compute mean L2-normalized embedding for each track
         for (track in tracks) {
             val embeddings = track.frames.mapNotNull { it.embedding }
             if (embeddings.isNotEmpty()) {
@@ -30,7 +25,6 @@ class IdentityClusterer(
             }
         }
 
-        // Initialize each track into its own cluster
         val clusters = tracks.map { mutableListOf(it) }.toMutableList()
 
         while (true) {
@@ -38,7 +32,6 @@ class IdentityClusterer(
             var bestI = -1
             var bestJ = -1
 
-            // Find closest pair of clusters (Average linkage distance)
             for (i in 0 until clusters.size) {
                 for (j in i + 1 until clusters.size) {
                     val dist = calculateClusterDistance(clusters[i], clusters[j])
@@ -50,7 +43,6 @@ class IdentityClusterer(
                 }
             }
 
-            // Merge if minimum distance is within similarity threshold
             if (bestI != -1 && bestJ != -1 && minDistance <= distanceThreshold) {
                 clusters[bestI].addAll(clusters[bestJ])
                 clusters.removeAt(bestJ)

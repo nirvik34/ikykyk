@@ -73,7 +73,6 @@ fun ProcessingScreen(
     ) {
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Playful Progress Badge
         Box(
             modifier = Modifier
                 .size(76.dp)
@@ -122,7 +121,6 @@ fun ProcessingScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Progress Bar
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -160,7 +158,6 @@ fun ProcessingScreen(
 
         Spacer(modifier = Modifier.height(28.dp))
 
-        // Steps Container Card
         Column(
             modifier = Modifier
                 .fillMaxWidth()

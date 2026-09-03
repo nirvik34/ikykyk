@@ -81,7 +81,6 @@ fun HomeScreen(
     ) {
         Spacer(modifier = Modifier.height(28.dp))
 
-        // Playful App Logo & Title
         Image(
             painter = painterResource(id = R.drawable.ic_cameo_logo),
             contentDescription = "cameo logo",
@@ -120,7 +119,6 @@ fun HomeScreen(
 
         Spacer(modifier = Modifier.height(28.dp))
 
-        // Video Upload Dropzone Card (Solid Charcoal #242424)
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -192,7 +190,6 @@ fun HomeScreen(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Sample Videos Header
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
@@ -209,7 +206,6 @@ fun HomeScreen(
 
         Spacer(modifier = Modifier.height(14.dp))
 
-        // Sample Cards
         SampleVideoCard(
             title = "sample 1 (5 people)",
             description = "5 unique people • 20 total appearances",

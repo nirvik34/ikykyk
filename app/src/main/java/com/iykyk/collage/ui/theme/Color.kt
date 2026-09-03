@@ -2,7 +2,6 @@ package com.iykyk.collage.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Core Brand Palette: Playful Candy Social UI
 val SoftBlack = Color(0xFF080808)
 val Charcoal = Color(0xFF242424)
 
@@ -15,7 +14,6 @@ val PrimaryWhite = Color(0xFFFFFFFF)
 val SoftGray = Color(0xFFA8A8A8)
 val Rose500 = Color(0xFFF43F5E)
 
-// Legacy alias mappings for backward compatibility
 val Slate950 = SoftBlack
 val Slate900 = SoftBlack
 val Slate800 = Charcoal

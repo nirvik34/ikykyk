@@ -16,9 +16,6 @@ data class ExtractedFrame(
 
 class VideoFrameExtractor(private val context: Context) {
 
-    /**
-     * Extracts frames at a fixed sampling interval (e.g., sampleEveryMs = 160ms ~ 6 FPS).
-     */
     suspend fun extractFrames(
         videoUri: Uri,
         sampleEveryMs: Long = 160L,
@@ -61,7 +58,7 @@ class VideoFrameExtractor(private val context: Context) {
             try {
                 retriever.release()
             } catch (e: Exception) {
-                // ignore
+                
             }
         }
 

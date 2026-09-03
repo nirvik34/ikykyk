@@ -8,9 +8,6 @@ import kotlin.math.min
 
 class AppearanceSegmentTracker {
 
-    /**
-     * Groups frame-by-frame face detections into continuous AppearanceTrack objects.
-     */
     fun trackAppearances(
         allFrameFaces: Map<Int, List<FaceFrameInfo>>
     ): List<AppearanceTrack> {
@@ -26,7 +23,6 @@ class AppearanceSegmentTracker {
             val assignedTrackIndices = HashSet<Int>()
             val assignedFaceIndices = HashSet<Int>()
 
-            // Try associating each face in current frame to active tracks
             for ((faceIdx, face) in facesInFrame.withIndex()) {
                 var bestTrackIdx = -1
                 var bestIou = 0.0f
@@ -37,7 +33,6 @@ class AppearanceSegmentTracker {
                     val lastFace = track.frames.last()
                     val timeDeltaMs = face.timestampMs - lastFace.timestampMs
 
-                    // Allow maximum gap of 600ms for continuous tracking
                     if (timeDeltaMs <= 600L) {
                         val iou = calculateIoU(face.boundingBox, lastFace.boundingBox)
                         if (iou > 0.22f && iou > bestIou) {
@@ -54,7 +49,6 @@ class AppearanceSegmentTracker {
                 }
             }
 
-            // Close tracks that were not updated and exceeded gap time
             val tracksToRemove = mutableListOf<Int>()
             for ((trackIdx, track) in activeTracks.withIndex()) {
                 if (!assignedTrackIndices.contains(trackIdx)) {
@@ -66,7 +60,6 @@ class AppearanceSegmentTracker {
                 }
             }
 
-            // Move closed tracks to completed list (if valid)
             for (idx in tracksToRemove.sortedDescending()) {
                 val closedTrack = activeTracks.removeAt(idx)
                 val appTrack = convertToAppearanceTrack(closedTrack)
@@ -75,7 +68,6 @@ class AppearanceSegmentTracker {
                 }
             }
 
-            // Create new tracks for unassigned faces
             for ((faceIdx, face) in facesInFrame.withIndex()) {
                 if (!assignedFaceIndices.contains(faceIdx)) {
                     activeTracks.add(
@@ -88,7 +80,6 @@ class AppearanceSegmentTracker {
             }
         }
 
-        // Flush remaining active tracks
         for (track in activeTracks) {
             val appTrack = convertToAppearanceTrack(track)
             if (appTrack != null) {
@@ -101,7 +92,7 @@ class AppearanceSegmentTracker {
 
     private fun convertToAppearanceTrack(track: MutableTrack): AppearanceTrack? {
         if (track.frames.size < 2) {
-            // Filter out 1-frame glitches / noise passes
+            
             return null
         }
 
@@ -109,15 +100,13 @@ class AppearanceSegmentTracker {
         val endMs = track.frames.last().timestampMs
         val durationMs = endMs - startMs
 
-        // Filter out instant whip-pan blur passes (< 300ms duration)
         if (durationMs < 300L && track.frames.size < 3) {
             return null
         }
 
-        // Check average sharpness across track
         val avgSharpness = track.frames.map { it.sharpnessScore }.average()
         if (avgSharpness < 15.0) {
-            // Whip-pan / severe blur pass filter
+            
             return null
         }
 

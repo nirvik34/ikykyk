@@ -87,7 +87,6 @@ fun CollageResultScreen(
     ) {
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Title Header
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -119,7 +118,6 @@ fun CollageResultScreen(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // Rendered Collage Preview Card
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -139,12 +137,11 @@ fun CollageResultScreen(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // Signature Action Buttons Row
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Signature Hot Pink CTA
+            
             Button(
                 onClick = onSaveToGallery,
                 colors = ButtonDefaults.buttonColors(containerColor = HotPink),
@@ -168,7 +165,6 @@ fun CollageResultScreen(
                 )
             }
 
-            // Secondary Outlined Action
             OutlinedButton(
                 onClick = onShareCollage,
                 shape = CircleShape,
@@ -186,7 +182,6 @@ fun CollageResultScreen(
 
         Spacer(modifier = Modifier.height(28.dp))
 
-        // People Breakdown Header
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
@@ -206,7 +201,6 @@ fun CollageResultScreen(
 
         Spacer(modifier = Modifier.height(14.dp))
 
-        // Horizontal Carousel of Person Cards with Candy Ring Accents
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(14.dp),
             modifier = Modifier.fillMaxWidth()
@@ -224,7 +218,6 @@ fun CollageResultScreen(
         Spacer(modifier = Modifier.height(32.dp))
     }
 
-    // Appearance Segment Audit Dialog
     if (activeAuditPerson != null) {
         AuditDialog(
             person = activeAuditPerson,

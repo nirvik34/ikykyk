@@ -18,9 +18,6 @@ import kotlin.math.sqrt
 
 class CollageRenderer(private val context: Context) {
 
-    /**
-     * Renders a high-resolution 1080x1920 Instagram Story style collage bitmap.
-     */
     fun renderCollage(
         identities: List<PersonIdentity>,
         videoTitle: String = "Portrait Video",
@@ -30,13 +27,11 @@ class CollageRenderer(private val context: Context) {
         val bitmap = Bitmap.createBitmap(canvasWidth, canvasHeight, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
 
-        // 1. Draw Solid SoftBlack Background (#080808)
         val bgPaint = Paint().apply {
             color = Color.parseColor("#080808")
         }
         canvas.drawRect(0f, 0f, canvasWidth.toFloat(), canvasHeight.toFloat(), bgPaint)
 
-        // Playful background blob aura (HotPink & SkyBlue accents)
         val auraPink = Paint().apply {
             color = Color.parseColor("#FF2490")
             alpha = 35
@@ -50,7 +45,6 @@ class CollageRenderer(private val context: Context) {
         canvas.drawCircle(canvasWidth * 0.85f, canvasHeight * 0.15f, 380f, auraPink)
         canvas.drawCircle(canvasWidth * 0.15f, canvasHeight * 0.85f, 420f, auraBlue)
 
-        // 2. Draw Header (Lowercase Microcopy)
         val headerTop = 100f
         val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.WHITE
@@ -60,7 +54,7 @@ class CollageRenderer(private val context: Context) {
         canvas.drawText("cameo", 80f, headerTop + 40f, textPaint)
 
         val subtitlePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.parseColor("#FF2490") // HotPink Accent
+            color = Color.parseColor("#FF2490") 
             typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
             textSize = 34f
         }
@@ -68,7 +62,7 @@ class CollageRenderer(private val context: Context) {
 
         val totalAppearances = identities.sumOf { it.totalAppearances }
         val metaPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.parseColor("#A8A8A8") // Soft Gray
+            color = Color.parseColor("#A8A8A8") 
             typeface = Typeface.DEFAULT
             textSize = 36f
         }
@@ -77,7 +71,6 @@ class CollageRenderer(private val context: Context) {
             80f, headerTop + 150f, metaPaint
         )
 
-        // 3. Grid Layout Parameters
         val gridTop = headerTop + 200f
         val gridBottom = canvasHeight - 160f
         val gridLeft = 60f
@@ -97,7 +90,6 @@ class CollageRenderer(private val context: Context) {
         val tileWidth = (gridWidth - (cols - 1) * spacing) / cols
         val tileHeight = (gridHeight - (rows - 1) * spacing) / rows
 
-        // 4. Draw Identity Tiles
         val candyColors = listOf("#FF2490", "#25A9E8", "#FFD83D", "#A8F02D")
         for ((index, identity) in identities.withIndex()) {
             val col = index % cols
@@ -118,9 +110,8 @@ class CollageRenderer(private val context: Context) {
             )
         }
 
-        // 5. Draw Footer Watermark
         val footerPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.parseColor("#A8A8A8") // Soft Gray
+            color = Color.parseColor("#A8A8A8") 
             typeface = Typeface.DEFAULT
             textSize = 30f
             textAlign = Paint.Align.CENTER
@@ -129,7 +120,6 @@ class CollageRenderer(private val context: Context) {
             "created on-device with cameo • on-device ml",
             canvasWidth / 2f, canvasHeight - 70f, footerPaint
         )
-
 
         return bitmap
     }
@@ -142,20 +132,17 @@ class CollageRenderer(private val context: Context) {
     ) {
         val cornerRadius = 36f
 
-        // Save canvas state for clipped rounded rectangle drawing
         canvas.save()
         val path = Path().apply {
             addRoundRect(rect, cornerRadius, cornerRadius, Path.Direction.CW)
         }
         canvas.clipPath(path)
 
-        // Draw Charcoal Card Background
         val cardBgPaint = Paint().apply {
             color = Color.parseColor("#242424")
         }
         canvas.drawRect(rect, cardBgPaint)
 
-        // Draw cropped face bitmap scaled to fill tile (Center Crop)
         val srcBitmap = identity.croppedFaceBitmap
         val bitmapAspect = srcBitmap.width.toFloat() / srcBitmap.height.toFloat()
         val rectAspect = rect.width() / rect.height()
@@ -171,7 +158,6 @@ class CollageRenderer(private val context: Context) {
         }
         canvas.drawBitmap(srcBitmap, srcRect, rect, Paint(Paint.FILTER_BITMAP_FLAG or Paint.ANTI_ALIAS_FLAG))
 
-        // Draw subtle bottom gradient overlay behind text
         val gradientPaint = Paint().apply {
             shader = LinearGradient(
                 rect.left, rect.bottom - rect.height() * 0.45f,
@@ -183,9 +169,8 @@ class CollageRenderer(private val context: Context) {
         }
         canvas.drawRect(rect.left, rect.bottom - rect.height() * 0.45f, rect.right, rect.bottom, gradientPaint)
 
-        canvas.restore() // Restore unclipped canvas for border and overlays
+        canvas.restore() 
 
-        // Draw Candy Accent Border
         val borderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             style = Paint.Style.STROKE
             strokeWidth = 6f
@@ -193,7 +178,6 @@ class CollageRenderer(private val context: Context) {
         }
         canvas.drawRoundRect(rect, cornerRadius, cornerRadius, borderPaint)
 
-        // Draw Pill Badge (Person Label & Appearance Count)
         val badgeHeight = 64f
         val badgeMargin = 20f
         val badgeRect = RectF(
@@ -204,7 +188,7 @@ class CollageRenderer(private val context: Context) {
         )
 
         val badgeBgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.parseColor("#FA242424") // Charcoal
+            color = Color.parseColor("#FA242424") 
         }
         canvas.drawRoundRect(badgeRect, 20f, 20f, badgeBgPaint)
 
@@ -215,7 +199,6 @@ class CollageRenderer(private val context: Context) {
         }
         canvas.drawRoundRect(badgeRect, 20f, 20f, badgeBorderPaint)
 
-        // Text inside Pill Badge
         val titlePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.WHITE
             typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)

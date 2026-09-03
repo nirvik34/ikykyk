@@ -54,7 +54,7 @@ class MainViewModel : ViewModel() {
         _uiState.update { it.copy(isProcessing = true, result = null) }
 
         viewModelScope.launch {
-            // Collect progress stream
+            
             launch {
                 repo.progress.collect { prog ->
                     _uiState.update { state -> state.copy(progress = prog) }
