@@ -17,13 +17,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Download
@@ -46,23 +45,24 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.iykyk.collage.model.PersonIdentity
 import com.iykyk.collage.model.CollageResult
-import com.iykyk.collage.ui.theme.Emerald400
-import com.iykyk.collage.ui.theme.GlassBorder
-import com.iykyk.collage.ui.theme.GlassSurface
-import com.iykyk.collage.ui.theme.Indigo500
-import com.iykyk.collage.ui.theme.Purple500
-import com.iykyk.collage.ui.theme.Slate400
-import com.iykyk.collage.ui.theme.Slate800
-import com.iykyk.collage.ui.theme.Slate900
+import com.iykyk.collage.model.PersonIdentity
+import com.iykyk.collage.ui.theme.Charcoal
+import com.iykyk.collage.ui.theme.HotPink
+import com.iykyk.collage.ui.theme.LimeGreen
+import com.iykyk.collage.ui.theme.PrimaryWhite
+import com.iykyk.collage.ui.theme.SkyBlue
+import com.iykyk.collage.ui.theme.SoftBlack
+import com.iykyk.collage.ui.theme.SoftGray
+import com.iykyk.collage.ui.theme.SunshineYellow
+
+private val RingColors = listOf(HotPink, SkyBlue, SunshineYellow, LimeGreen)
 
 @Composable
 fun CollageResultScreen(
@@ -80,12 +80,12 @@ fun CollageResultScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Slate900)
+            .background(SoftBlack)
             .verticalScroll(scrollState)
             .padding(20.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         // Title Header
         Row(
@@ -95,15 +95,15 @@ fun CollageResultScreen(
         ) {
             Column {
                 Text(
-                    text = "Collage Generated!",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    text = "collage ready! 🥳",
+                    fontSize = 26.sp,
+                    fontWeight = FontWeight.Black,
+                    color = PrimaryWhite
                 )
                 Text(
-                    text = "${result.identities.size} unique people • $totalAppearances total appearances",
+                    text = "${result.identities.size} people found • $totalAppearances total appearances",
                     fontSize = 14.sp,
-                    color = Slate400
+                    color = SoftGray
                 )
             }
 
@@ -111,9 +111,9 @@ fun CollageResultScreen(
                 onClick = onReset,
                 modifier = Modifier
                     .clip(CircleShape)
-                    .background(GlassSurface)
+                    .background(Charcoal)
             ) {
-                Icon(Icons.Default.Refresh, contentDescription = "New Video", tint = Color.White)
+                Icon(Icons.Default.Refresh, contentDescription = "New Video", tint = PrimaryWhite)
             }
         }
 
@@ -123,9 +123,8 @@ fun CollageResultScreen(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(24.dp))
-                .border(1.5.dp, GlassBorder, RoundedCornerShape(24.dp)),
-            colors = CardDefaults.cardColors(containerColor = Slate800)
+                .clip(RoundedCornerShape(24.dp)),
+            colors = CardDefaults.cardColors(containerColor = Charcoal)
         ) {
             Image(
                 bitmap = result.collageBitmap.asImageBitmap(),
@@ -140,73 +139,83 @@ fun CollageResultScreen(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // Action Buttons Row
+        // Signature Action Buttons Row
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            // Signature Hot Pink CTA
             Button(
                 onClick = onSaveToGallery,
-                colors = ButtonDefaults.buttonColors(containerColor = Indigo500),
-                shape = RoundedCornerShape(14.dp),
-                modifier = Modifier.weight(1f)
+                colors = ButtonDefaults.buttonColors(containerColor = HotPink),
+                shape = CircleShape,
+                modifier = Modifier
+                    .weight(1.2f)
+                    .height(54.dp)
             ) {
                 Icon(
                     imageVector = if (savedUriName != null) Icons.Default.CheckCircle else Icons.Default.Download,
                     contentDescription = null,
-                    modifier = Modifier.size(18.dp)
+                    tint = PrimaryWhite,
+                    modifier = Modifier.size(20.dp)
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = if (savedUriName != null) "Saved to Gallery" else "Save Image",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold
+                    text = if (savedUriName != null) "saved!" else "save",
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = PrimaryWhite
                 )
             }
 
+            // Secondary Outlined Action
             OutlinedButton(
                 onClick = onShareCollage,
-                shape = RoundedCornerShape(14.dp),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
-                border = androidx.compose.foundation.BorderStroke(1.dp, GlassBorder),
-                modifier = Modifier.weight(1f)
+                shape = CircleShape,
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = PrimaryWhite),
+                border = androidx.compose.foundation.BorderStroke(1.5.dp, Charcoal),
+                modifier = Modifier
+                    .weight(1f)
+                    .height(54.dp)
             ) {
-                Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(18.dp))
+                Icon(Icons.Default.Share, contentDescription = null, tint = PrimaryWhite, modifier = Modifier.size(18.dp))
                 Spacer(modifier = Modifier.width(6.dp))
-                Text("Share Story", fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                Text("share", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = PrimaryWhite)
             }
         }
 
         Spacer(modifier = Modifier.height(28.dp))
 
-        // People Breakdown & Audit Header
+        // People Breakdown Header
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.People, contentDescription = null, tint = Indigo500, modifier = Modifier.size(20.dp))
+                Icon(Icons.Default.People, contentDescription = null, tint = SkyBlue, modifier = Modifier.size(20.dp))
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Identified People & Audit Tracks",
-                    fontSize = 16.sp,
+                    text = "people found",
+                    fontSize = 17.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = PrimaryWhite
                 )
             }
         }
 
         Spacer(modifier = Modifier.height(14.dp))
 
-        // Horizontal List of People Cards
+        // Horizontal Carousel of Person Cards with Candy Ring Accents
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(14.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
-            items(items = result.identities, key = { it.id }) { person ->
+            itemsIndexed(items = result.identities, key = { _, person -> person.id }) { index, person ->
+                val ringColor = RingColors[index % RingColors.size]
                 PersonCard(
                     person = person,
+                    ringColor = ringColor,
                     onInspectAudit = { onSelectAuditPerson(person) }
                 )
             }
@@ -227,20 +236,20 @@ fun CollageResultScreen(
 @Composable
 fun PersonCard(
     person: PersonIdentity,
+    ringColor: Color,
     onInspectAudit: () -> Unit
 ) {
     Card(
         modifier = Modifier
-            .width(160.dp)
-            .clip(RoundedCornerShape(18.dp))
-            .border(1.dp, GlassBorder, RoundedCornerShape(18.dp))
+            .width(156.dp)
+            .clip(RoundedCornerShape(20.dp))
             .clickable(onClick = onInspectAudit),
-        colors = CardDefaults.cardColors(containerColor = GlassSurface)
+        colors = CardDefaults.cardColors(containerColor = Charcoal)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
+                .padding(14.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Image(
@@ -248,45 +257,45 @@ fun PersonCard(
                 contentDescription = person.name,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .size(90.dp)
+                    .size(86.dp)
                     .clip(CircleShape)
-                    .border(2.dp, Indigo500, CircleShape)
+                    .border(3.dp, ringColor, CircleShape)
             )
 
             Spacer(modifier = Modifier.height(10.dp))
 
             Text(
-                text = person.name,
+                text = person.name.lowercase(),
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White
+                color = PrimaryWhite
             )
 
-            Spacer(modifier = Modifier.height(2.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
             Box(
                 modifier = Modifier
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(Indigo500.copy(alpha = 0.2f))
-                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                    .clip(CircleShape)
+                    .background(ringColor.copy(alpha = 0.2f))
+                    .padding(horizontal = 10.dp, vertical = 4.dp)
             ) {
                 Text(
-                    text = "${person.totalAppearances} Appearances",
+                    text = "${person.totalAppearances} appearances",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Indigo500
+                    color = ringColor
                 )
             }
 
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.Info, contentDescription = null, tint = Slate400, modifier = Modifier.size(12.dp))
+                Icon(Icons.Default.Info, contentDescription = null, tint = SoftGray, modifier = Modifier.size(12.dp))
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    text = "Tap to Audit",
+                    text = "tap to audit",
                     fontSize = 11.sp,
-                    color = Slate400
+                    color = SoftGray
                 )
             }
         }
@@ -300,7 +309,7 @@ fun AuditDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        containerColor = Slate900,
+        containerColor = Charcoal,
         title = {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -308,13 +317,13 @@ fun AuditDialog(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = "Appearance Audit: ${person.name}",
-                    color = Color.White,
+                    text = "audit: ${person.name.lowercase()}",
+                    color = PrimaryWhite,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
                 )
                 IconButton(onClick = onDismiss) {
-                    Icon(Icons.Default.Close, contentDescription = "Close", tint = Slate400)
+                    Icon(Icons.Default.Close, contentDescription = "Close", tint = SoftGray)
                 }
             }
         },
@@ -333,30 +342,30 @@ fun AuditDialog(
                         modifier = Modifier
                             .size(54.dp)
                             .clip(CircleShape)
-                            .border(1.5.dp, Indigo500, CircleShape)
+                            .border(2.dp, HotPink, CircleShape)
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
                         Text(
-                            text = "Total Appearances: ${person.totalAppearances}",
-                            color = Color.White,
-                            fontWeight = FontWeight.SemiBold,
+                            text = "appearances: ${person.totalAppearances}",
+                            color = PrimaryWhite,
+                            fontWeight = FontWeight.Bold,
                             fontSize = 14.sp
                         )
                         Text(
-                            text = "Total Visible: ${"%.1f".format(person.totalVisibleDurationMs / 1000.0f)} seconds",
-                            color = Slate400,
+                            text = "visible: ${"%.1f".format(person.totalVisibleDurationMs / 1000.0f)} seconds",
+                            color = SoftGray,
                             fontSize = 13.sp
                         )
                     }
                 }
 
-                HorizontalDivider(color = GlassBorder)
+                HorizontalDivider(color = SoftGray.copy(alpha = 0.2f))
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Text(
-                    text = "Continuous Appearance Tracks:",
-                    color = Indigo500,
+                    text = "appearance timeline:",
+                    color = SkyBlue,
                     fontWeight = FontWeight.Bold,
                     fontSize = 13.sp
                 )
@@ -368,7 +377,7 @@ fun AuditDialog(
                 ) {
                     person.appearances.forEachIndexed { index, track ->
                         Card(
-                            colors = CardDefaults.cardColors(containerColor = Slate800),
+                            colors = CardDefaults.cardColors(containerColor = SoftBlack),
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Row(
@@ -380,22 +389,22 @@ fun AuditDialog(
                             ) {
                                 Column {
                                     Text(
-                                        text = "Appearance #${index + 1}",
-                                        color = Color.White,
+                                        text = "appearance #${index + 1}",
+                                        color = PrimaryWhite,
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 13.sp
                                     )
                                     Text(
-                                        text = "Time: ${"%.2f".format(track.startTimeMs / 1000f)}s - ${"%.2f".format(track.endTimeMs / 1000f)}s",
-                                        color = Slate400,
+                                        text = "time: ${"%.2f".format(track.startTimeMs / 1000f)}s - ${"%.2f".format(track.endTimeMs / 1000f)}s",
+                                        color = SoftGray,
                                         fontSize = 12.sp
                                     )
                                 }
 
                                 Text(
                                     text = "${track.frameCount} frames",
-                                    color = Emerald400,
-                                    fontWeight = FontWeight.SemiBold,
+                                    color = LimeGreen,
+                                    fontWeight = FontWeight.Bold,
                                     fontSize = 12.sp
                                 )
                             }
@@ -406,7 +415,7 @@ fun AuditDialog(
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text("Close Audit", color = Indigo500, fontWeight = FontWeight.Bold)
+                Text("close", color = HotPink, fontWeight = FontWeight.Bold)
             }
         }
     )

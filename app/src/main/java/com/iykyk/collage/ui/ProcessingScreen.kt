@@ -1,10 +1,6 @@
 package com.iykyk.collage.ui
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,21 +17,16 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Error
-import androidx.compose.material.icons.filled.Memory
-import androidx.compose.material.icons.filled.Psychology
-import androidx.compose.material.icons.filled.VideoLibrary
+import androidx.compose.material.icons.filled.Face
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -43,15 +34,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.iykyk.collage.model.PipelineStage
 import com.iykyk.collage.model.ProcessingProgress
-import com.iykyk.collage.ui.theme.Emerald400
-import com.iykyk.collage.ui.theme.GlassBorder
-import com.iykyk.collage.ui.theme.GlassSurface
-import com.iykyk.collage.ui.theme.Indigo500
-import com.iykyk.collage.ui.theme.Purple500
+import com.iykyk.collage.ui.theme.Charcoal
+import com.iykyk.collage.ui.theme.HotPink
+import com.iykyk.collage.ui.theme.LimeGreen
+import com.iykyk.collage.ui.theme.PrimaryWhite
 import com.iykyk.collage.ui.theme.Rose500
-import com.iykyk.collage.ui.theme.Slate400
-import com.iykyk.collage.ui.theme.Slate800
-import com.iykyk.collage.ui.theme.Slate900
+import com.iykyk.collage.ui.theme.SkyBlue
+import com.iykyk.collage.ui.theme.SoftBlack
+import com.iykyk.collage.ui.theme.SoftGray
 
 @Composable
 fun ProcessingScreen(
@@ -59,10 +49,23 @@ fun ProcessingScreen(
 ) {
     val scrollState = rememberScrollState()
 
+    val friendlyMessage = when (progress.stage) {
+        PipelineStage.EXTRACTING_FRAMES -> "watching video..."
+        PipelineStage.DETECTING_FACES -> "finding faces..."
+        PipelineStage.TRACKING_APPEARANCES -> "matching who is who..."
+        PipelineStage.COMPUTING_EMBEDDINGS -> "almost got it..."
+        PipelineStage.CLUSTERING_IDENTITIES -> "grouping everyone..."
+        PipelineStage.SELECTING_SHOTS -> "picking best photos..."
+        PipelineStage.GENERATING_COLLAGE -> "making collage..."
+        PipelineStage.COMPLETED -> "all done! 🥳"
+        PipelineStage.ERROR -> "oops, something went wrong"
+        else -> "working magic..."
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Slate900)
+            .background(SoftBlack)
             .verticalScroll(scrollState)
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -70,82 +73,69 @@ fun ProcessingScreen(
     ) {
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Top Pulsing ML Badge
+        // Playful Progress Badge
         Box(
             modifier = Modifier
-                .size(80.dp)
+                .size(76.dp)
                 .clip(CircleShape)
-                .background(Brush.radialGradient(listOf(Indigo500.copy(alpha = 0.4f), Color.Transparent))),
+                .background(Charcoal),
             contentAlignment = Alignment.Center
         ) {
-            Box(
-                modifier = Modifier
-                    .size(60.dp)
-                    .clip(CircleShape)
-                    .background(GlassSurface)
-                    .border(1.5.dp, GlassBorder, CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                if (progress.stage == PipelineStage.ERROR) {
-                    Icon(Icons.Default.Error, contentDescription = null, tint = Rose500, modifier = Modifier.size(32.dp))
-                } else {
-                    CircularProgressIndicator(
-                        progress = { progress.progressFraction.coerceIn(0f, 1f) },
-                        modifier = Modifier.size(44.dp),
-                        color = Indigo500,
-                        strokeWidth = 3.dp,
-                        trackColor = Slate800,
-                    )
-                    Icon(
-                        imageVector = Icons.Default.Memory,
-                        contentDescription = null,
-                        tint = Indigo500,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
+            if (progress.stage == PipelineStage.ERROR) {
+                Icon(Icons.Default.Error, contentDescription = null, tint = Rose500, modifier = Modifier.size(36.dp))
+            } else {
+                CircularProgressIndicator(
+                    progress = { progress.progressFraction.coerceIn(0f, 1f) },
+                    modifier = Modifier.size(54.dp),
+                    color = HotPink,
+                    strokeWidth = 4.dp,
+                    trackColor = SoftBlack
+                )
+                Icon(
+                    imageVector = Icons.Default.Face,
+                    contentDescription = null,
+                    tint = HotPink,
+                    modifier = Modifier.size(24.dp)
+                )
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
         Text(
-            text = when (progress.stage) {
-                PipelineStage.ERROR -> "Processing Failed"
-                PipelineStage.COMPLETED -> "Processing Complete!"
-                else -> "Processing Video..."
-            },
+            text = friendlyMessage,
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.White,
+            color = PrimaryWhite,
             textAlign = TextAlign.Center
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(6.dp))
 
         Text(
-            text = progress.message,
-            fontSize = 15.sp,
-            color = Slate400,
+            text = progress.message.lowercase(),
+            fontSize = 14.sp,
+            color = SoftGray,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(horizontal = 16.dp)
         )
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Smooth Progress Bar
+        // Progress Bar
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(10.dp)
-                .clip(RoundedCornerShape(5.dp))
-                .background(Slate800)
+                .clip(CircleShape)
+                .background(Charcoal)
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth(progress.progressFraction.coerceIn(0.01f, 1f))
                     .height(10.dp)
-                    .clip(RoundedCornerShape(5.dp))
-                    .background(Brush.horizontalGradient(listOf(Indigo500, Purple500)))
+                    .clip(CircleShape)
+                    .background(HotPink)
             )
         }
 
@@ -159,67 +149,66 @@ fun ProcessingScreen(
                 text = "${(progress.progressFraction * 100).toInt()}%",
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Bold,
-                color = Indigo500
+                color = HotPink
             )
             Text(
-                text = "On-Device ML Engine",
+                text = "on-device analysis",
                 fontSize = 13.sp,
-                color = Slate400
+                color = SoftGray
             )
         }
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(28.dp))
 
-        // Pipeline Stages List Card
+        // Steps Container Card
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(20.dp))
-                .background(GlassSurface)
-                .border(1.dp, GlassBorder, RoundedCornerShape(20.dp))
+                .background(Charcoal)
                 .padding(20.dp)
         ) {
             Text(
-                text = "Pipeline Steps",
-                fontSize = 16.sp,
+                text = "progress steps",
+                fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White
+                color = PrimaryWhite
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
             PipelineStepRow(
-                title = "Frame Sampling & Extraction",
+                title = "sampling video frames",
                 isActive = progress.stage == PipelineStage.EXTRACTING_FRAMES,
                 isCompleted = progress.stage.ordinal > PipelineStage.EXTRACTING_FRAMES.ordinal
             )
             PipelineStepRow(
-                title = "ML Kit Face & Pose Detection",
+                title = "finding faces & poses",
                 isActive = progress.stage == PipelineStage.DETECTING_FACES,
                 isCompleted = progress.stage.ordinal > PipelineStage.DETECTING_FACES.ordinal
             )
             PipelineStepRow(
-                title = "Temporal Appearance Tracking",
+                title = "tracking continuous appearances",
                 isActive = progress.stage == PipelineStage.TRACKING_APPEARANCES,
                 isCompleted = progress.stage.ordinal > PipelineStage.TRACKING_APPEARANCES.ordinal
             )
             PipelineStepRow(
-                title = "TFLite Face Embeddings (MobileFaceNet)",
+                title = "extracting face embeddings",
                 isActive = progress.stage == PipelineStage.COMPUTING_EMBEDDINGS,
                 isCompleted = progress.stage.ordinal > PipelineStage.COMPUTING_EMBEDDINGS.ordinal
             )
             PipelineStepRow(
-                title = "Cosine Similarity Clustering",
+                title = "grouping unique people",
                 isActive = progress.stage == PipelineStage.CLUSTERING_IDENTITIES,
                 isCompleted = progress.stage.ordinal > PipelineStage.CLUSTERING_IDENTITIES.ordinal
             )
             PipelineStepRow(
-                title = "Representative Shot Selection",
+                title = "picking best shots",
                 isActive = progress.stage == PipelineStage.SELECTING_SHOTS,
                 isCompleted = progress.stage.ordinal > PipelineStage.SELECTING_SHOTS.ordinal
             )
             PipelineStepRow(
-                title = "Story Canvas Collage Rendering",
+                title = "rendering story collage",
                 isActive = progress.stage == PipelineStage.GENERATING_COLLAGE,
                 isCompleted = progress.stage.ordinal > PipelineStage.GENERATING_COLLAGE.ordinal
             )
@@ -230,13 +219,12 @@ fun ProcessingScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
+                    .clip(RoundedCornerShape(14.dp))
                     .background(Rose500.copy(alpha = 0.15f))
-                    .border(1.dp, Rose500.copy(alpha = 0.4f), RoundedCornerShape(12.dp))
                     .padding(16.dp)
             ) {
                 Text(
-                    text = "Error Details: ${progress.errorDetails}",
+                    text = "error: ${progress.errorDetails}",
                     color = Rose500,
                     fontSize = 13.sp
                 )
@@ -256,7 +244,7 @@ fun PipelineStepRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
+            .padding(vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
@@ -268,14 +256,14 @@ fun PipelineStepRow(
                     Icon(
                         imageVector = Icons.Default.CheckCircle,
                         contentDescription = null,
-                        tint = Emerald400,
+                        tint = LimeGreen,
                         modifier = Modifier.size(18.dp)
                     )
                 }
                 isActive -> {
                     CircularProgressIndicator(
                         modifier = Modifier.size(16.dp),
-                        color = Indigo500,
+                        color = HotPink,
                         strokeWidth = 2.dp
                     )
                 }
@@ -284,7 +272,7 @@ fun PipelineStepRow(
                         modifier = Modifier
                             .size(8.dp)
                             .clip(CircleShape)
-                            .background(Slate400.copy(alpha = 0.4f))
+                            .background(SoftGray.copy(alpha = 0.3f))
                     )
                 }
             }
@@ -297,9 +285,9 @@ fun PipelineStepRow(
             fontSize = 14.sp,
             fontWeight = if (isActive || isCompleted) FontWeight.SemiBold else FontWeight.Normal,
             color = when {
-                isCompleted -> Color.White
-                isActive -> Indigo500
-                else -> Slate400
+                isCompleted -> PrimaryWhite
+                isActive -> HotPink
+                else -> SoftGray
             }
         )
     }

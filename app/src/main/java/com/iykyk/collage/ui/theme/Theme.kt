@@ -5,21 +5,20 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Indigo500,
-    secondary = Purple500,
-    tertiary = Emerald400,
-    background = Slate900,
-    surface = Slate800,
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onBackground = Color.White,
-    onSurface = Slate200
+    primary = HotPink,
+    secondary = SkyBlue,
+    tertiary = LimeGreen,
+    background = SoftBlack,
+    surface = Charcoal,
+    onPrimary = PrimaryWhite,
+    onSecondary = PrimaryWhite,
+    onBackground = PrimaryWhite,
+    onSurface = PrimaryWhite
 )
 
 @Composable
@@ -31,8 +30,8 @@ fun IYKYKCollageTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = Slate900.toArgb()
-            window.navigationBarColor = Slate900.toArgb()
+            window.statusBarColor = SoftBlack.toArgb()
+            window.navigationBarColor = SoftBlack.toArgb()
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = false
         }
     }
