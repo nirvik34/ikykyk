@@ -26,7 +26,7 @@ class VideoProcessorRepository(private val context: Context) {
     private val faceDetector = MLKitFaceDetector()
     private val embeddingExtractor = TFLiteEmbeddingExtractor(context)
     private val segmentTracker = AppearanceSegmentTracker()
-    private val identityClusterer = IdentityClusterer(distanceThreshold = 0.40f)
+    private val identityClusterer = IdentityClusterer()
     private val representativeShotSelector = RepresentativeShotSelector()
     private val collageRenderer = CollageRenderer(context)
 
