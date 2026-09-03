@@ -101,7 +101,7 @@ fun HomeScreen(
         Spacer(modifier = Modifier.height(6.dp))
 
         Text(
-            text = "turn videos into people collages ✨",
+            text = "turn videos into people collages",
             fontSize = 17.sp,
             fontWeight = FontWeight.SemiBold,
             color = PrimaryWhite,

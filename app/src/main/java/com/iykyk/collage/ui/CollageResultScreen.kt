@@ -94,7 +94,7 @@ fun CollageResultScreen(
         ) {
             Column {
                 Text(
-                    text = "collage ready! 🥳",
+                    text = "collage ready!",
                     fontSize = 26.sp,
                     fontWeight = FontWeight.Black,
                     color = PrimaryWhite

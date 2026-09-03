@@ -1,6 +1,6 @@
 # Design System: cameo
 
-## 🎨 1. Visual Style: Playful 3D Social / Candy UI
+##  1. Visual Style: Playful 3D Social / Candy UI
 
 **cameo** is a playful social utility designed like a party game meets Snapchat sticker app. 
 
@@ -8,15 +8,15 @@
 **Playful · Social · Bold · Friendly · Fast · Dark · Candy-Colored · Gen-Z**
 
 ### What to Avoid
-- ❌ Futuristic enterprise AI tropes
-- ❌ Heavy glassmorphism & glows
-- ❌ Cyberpunk neon purple gradients
-- ❌ Overly technical UI jargon
-- ❌ Corporate uppercase headers
+-  Futuristic enterprise AI tropes
+-  Heavy glassmorphism & glows
+-  Cyberpunk neon purple gradients
+-  Overly technical UI jargon
+-  Corporate uppercase headers
 
 ---
 
-## 🌈 2. Color Palette & Roles
+##  2. Color Palette & Roles
 
 | Role | Name | Hex | Usage |
 | :--- | :--- | :--- | :--- |
@@ -31,7 +31,7 @@
 
 ---
 
-## 💗 3. Component Design & Microcopy Rules
+##  3. Component Design & Microcopy Rules
 
 ### Lowercase Personality
 All UI microcopy uses **lowercase text** for a casual, friendly social vibe:

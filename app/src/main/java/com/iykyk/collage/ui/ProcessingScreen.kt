@@ -57,7 +57,7 @@ fun ProcessingScreen(
         PipelineStage.CLUSTERING_IDENTITIES -> "grouping everyone..."
         PipelineStage.SELECTING_SHOTS -> "picking best photos..."
         PipelineStage.GENERATING_COLLAGE -> "making collage..."
-        PipelineStage.COMPLETED -> "all done! 🥳"
+        PipelineStage.COMPLETED -> "all done!"
         PipelineStage.ERROR -> "oops, something went wrong"
         else -> "working magic..."
     }
