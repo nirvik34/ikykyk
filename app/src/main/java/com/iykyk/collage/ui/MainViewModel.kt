@@ -8,7 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.iykyk.collage.model.PersonIdentity
 import com.iykyk.collage.model.PipelineStage
 import com.iykyk.collage.model.ProcessingProgress
-import com.iykyk.collage.processor.CollageResult
+import com.iykyk.collage.model.CollageResult
 import com.iykyk.collage.processor.VideoProcessorRepository
 import com.iykyk.collage.util.MediaStoreUtils
 import kotlinx.coroutines.flow.MutableStateFlow

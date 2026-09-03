@@ -101,3 +101,9 @@ data class ProcessingProgress(
     val message: String = "Ready to process",
     val errorDetails: String? = null
 )
+
+data class CollageResult(
+    val identities: List<PersonIdentity>,
+    val collageBitmap: Bitmap
+)
+

@@ -17,6 +17,7 @@ val Indigo300 = Color(0xFFA5B4FC)
 val Purple500 = Color(0xFF8B5CF6)
 val Emerald400 = Color(0xFF34D399)
 val Amber400 = Color(0xFFFBBF24)
+val Rose500 = Color(0xFFF43F5E)
 
 val GlassBorder = Color(0x33FFFFFF)
 val GlassSurface = Color(0x1F1E293B)

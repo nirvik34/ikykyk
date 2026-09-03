@@ -36,7 +36,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
@@ -54,7 +54,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.iykyk.collage.model.PersonIdentity
-import com.iykyk.collage.processor.CollageResult
+import com.iykyk.collage.model.CollageResult
 import com.iykyk.collage.ui.theme.Emerald400
 import com.iykyk.collage.ui.theme.GlassBorder
 import com.iykyk.collage.ui.theme.GlassSurface
@@ -204,7 +204,7 @@ fun CollageResultScreen(
             horizontalArrangement = Arrangement.spacedBy(14.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
-            items(result.identities) { person ->
+            items(items = result.identities, key = { it.id }) { person ->
                 PersonCard(
                     person = person,
                     onInspectAudit = { onSelectAuditPerson(person) }
@@ -351,7 +351,7 @@ fun AuditDialog(
                     }
                 }
 
-                Divider(color = GlassBorder)
+                HorizontalDivider(color = GlassBorder)
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Text(

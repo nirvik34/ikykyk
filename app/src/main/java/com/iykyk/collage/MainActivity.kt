@@ -22,7 +22,7 @@ import com.iykyk.collage.ui.CollageResultScreen
 import com.iykyk.collage.ui.HomeScreen
 import com.iykyk.collage.ui.MainViewModel
 import com.iykyk.collage.ui.ProcessingScreen
-import com.iykyk.collage.ui.theme.IykykTheme
+import com.iykyk.collage.ui.theme.IYKYKCollageTheme
 
 class MainActivity : ComponentActivity() {
 
@@ -39,7 +39,7 @@ class MainActivity : ComponentActivity() {
         checkAndRequestPermissions()
 
         setContent {
-            IykykTheme {
+            IYKYKCollageTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background

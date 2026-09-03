@@ -183,7 +183,3 @@ class VideoProcessorRepository(private val context: Context) {
     }
 }
 
-data class CollageResult(
-    val identities: List<PersonIdentity>,
-    val collageBitmap: android.graphics.Bitmap
-)
