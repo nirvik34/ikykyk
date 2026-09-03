@@ -89,6 +89,66 @@ object BitmapUtils {
         }
     }
 
+    fun cropSquareFaceForEmbedding(
+        source: Bitmap,
+        faceRect: Rect,
+        paddingFraction: Float = 0.25f
+    ): Bitmap {
+        val centerX = faceRect.centerX()
+        val centerY = faceRect.centerY()
+        val maxDim = max(faceRect.width(), faceRect.height())
+        val side = (maxDim * (1.0f + paddingFraction)).toInt()
+        val halfSide = side / 2
+
+        var left = centerX - halfSide
+        var top = centerY - halfSide
+        var right = left + side
+        var bottom = top + side
+
+        if (left < 0) {
+            right -= left
+            left = 0
+        }
+        if (top < 0) {
+            bottom -= top
+            top = 0
+        }
+        if (right > source.width) {
+            left -= (right - source.width)
+            right = source.width
+        }
+        if (bottom > source.height) {
+            top -= (bottom - source.height)
+            bottom = source.height
+        }
+
+        left = max(0, left)
+        top = max(0, top)
+        right = min(source.width, right)
+        bottom = min(source.height, bottom)
+
+        val cropW = max(1, right - left)
+        val cropH = max(1, bottom - top)
+
+        val cropped = Bitmap.createBitmap(source, left, top, cropW, cropH)
+
+        if (cropW == cropH) {
+            return cropped
+        }
+
+        val squareDim = max(cropW, cropH)
+        val squareBitmap = Bitmap.createBitmap(squareDim, squareDim, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(squareBitmap)
+        canvas.drawColor(Color.rgb(128, 128, 128))
+        val dx = (squareDim - cropW) / 2f
+        val dy = (squareDim - cropH) / 2f
+        canvas.drawBitmap(cropped, dx, dy, null)
+        if (!cropped.isRecycled) {
+            cropped.recycle()
+        }
+        return squareBitmap
+    }
+
     fun scaleBitmap(bitmap: Bitmap, targetWidth: Int, targetHeight: Int): Bitmap {
         return Bitmap.createScaledBitmap(bitmap, targetWidth, targetHeight, true)
     }

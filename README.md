@@ -30,11 +30,11 @@
 * Applies $L_2$ vector normalization to standardize feature magnitudes.
 
 ### 5. Identity Clustering (`IdentityClusterer`)
-* Computes mean embedding vectors for each appearance segment.
-* Performs hierarchical clustering using **Cosine Distance**:
+* Computes mean embedding vectors for each appearance track.
+* Performs centroid-linkage hierarchical clustering using **Cosine Distance**:
   $$d(\mathbf{u}, \mathbf{v}) = 1 - \frac{\mathbf{u} \cdot \mathbf{v}}{\|\mathbf{u}\|_2 \|\mathbf{v}\|_2}$$
-* **Co-Occurrence Guard**: Strictly prevents any two face tracks that appear simultaneously in the same video frame from being merged into the same cluster.
-* **Calibrated Threshold**: Merges tracks with cosine distance $\le 0.28\text{f}$.
+* **Co-Occurrence Guard**: Enforces strict frame co-occurrence and temporal overlap checks (minimum 80 ms window) to prevent distinct people present in the same segment from being merged.
+* **Calibrated Threshold**: Merges tracks with cosine distance $\le 0.38\text{f}$.
 
 ### 6. Representative Shot Selection (`RepresentativeShotSelector`)
 * Evaluates all frames within a person's identity cluster.
@@ -43,7 +43,7 @@
 * Generates a padded portrait crop optimized for collage placement.
 
 ### 7. Canvas Rendering & Sharing (`CollageRenderer` & `MediaStoreUtils`)
-* Dynamically arranges individual identity portraits into a 1080x1920 9:16 story grid layout.
+* Dynamically arranges individual identity portraits into multiple selectable layout styles (Editorial Grid, Film Strip, Polaroid, and Full Bleed).
 * Saves collages directly to device storage under `Pictures/cameo Collages/` via Android `MediaStore`.
 * Integrates native Android share sheet via `FileProvider`.
 
@@ -53,7 +53,7 @@
 
 Cosine distance measures vector orientation rather than magnitude, making it invariant to lighting changes and exposure differences. Combined with $L_2$ normalization, cosine distance provides consistent pairwise comparison bounds between $[0.0, 2.0]$.
 
-The threshold of **0.28** (corresponding to cosine similarity $\ge 0.72$) was calibrated specifically for MobileFaceNet embeddings. Enforcing a strict frame co-occurrence constraint guarantees that multiple individuals appearing side-by-side in the same shot are never erroneously combined into a single identity.
+The threshold of **0.38** (corresponding to cosine similarity $\ge 0.62$) was calibrated for MobileFaceNet embeddings with centroid-linkage clustering. Enforcing strict frame co-occurrence and temporal overlap constraints guarantees that multiple individuals appearing side-by-side or within shared video segments are never erroneously combined into a single identity.
 
 ---
 
