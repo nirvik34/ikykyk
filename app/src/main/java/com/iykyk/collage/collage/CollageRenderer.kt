@@ -30,54 +30,50 @@ class CollageRenderer(private val context: Context) {
         val bitmap = Bitmap.createBitmap(canvasWidth, canvasHeight, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
 
-        // 1. Draw Background Gradient (Deep Slate & Glowing Accents)
+        // 1. Draw Solid SoftBlack Background (#080808)
         val bgPaint = Paint().apply {
-            shader = LinearGradient(
-                0f, 0f, canvasWidth.toFloat(), canvasHeight.toFloat(),
-                intArrayOf(
-                    Color.parseColor("#0F172A"), // Slate 900
-                    Color.parseColor("#1E1B4B"), // Indigo 950
-                    Color.parseColor("#0F172A")
-                ),
-                floatArrayOf(0.0f, 0.5f, 1.0f),
-                Shader.TileMode.CLAMP
-            )
+            color = Color.parseColor("#080808")
         }
         canvas.drawRect(0f, 0f, canvasWidth.toFloat(), canvasHeight.toFloat(), bgPaint)
 
-        // Decorative background glowing aura
-        val auraPaint = Paint().apply {
-            color = Color.parseColor("#312E81")
-            alpha = 80
+        // Playful background blob aura (HotPink & SkyBlue accents)
+        val auraPink = Paint().apply {
+            color = Color.parseColor("#FF2490")
+            alpha = 35
             isAntiAlias = true
         }
-        canvas.drawCircle(canvasWidth * 0.8f, canvasHeight * 0.2f, 400f, auraPaint)
-        canvas.drawCircle(canvasWidth * 0.2f, canvasHeight * 0.8f, 500f, auraPaint)
+        val auraBlue = Paint().apply {
+            color = Color.parseColor("#25A9E8")
+            alpha = 35
+            isAntiAlias = true
+        }
+        canvas.drawCircle(canvasWidth * 0.85f, canvasHeight * 0.15f, 380f, auraPink)
+        canvas.drawCircle(canvasWidth * 0.15f, canvasHeight * 0.85f, 420f, auraBlue)
 
-        // 2. Draw Header
+        // 2. Draw Header (Lowercase Microcopy)
         val headerTop = 100f
         val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.WHITE
             typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-            textSize = 54f
+            textSize = 58f
         }
         canvas.drawText("iykyk", 80f, headerTop + 40f, textPaint)
 
         val subtitlePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.parseColor("#A5B4FC") // Indigo 300
-            typeface = Typeface.DEFAULT
+            color = Color.parseColor("#FF2490") // HotPink Accent
+            typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
             textSize = 34f
         }
-        canvas.drawText("UNIQUE PERSON COLLAGE", 80f, headerTop + 90f, subtitlePaint)
+        canvas.drawText("unique person collage", 80f, headerTop + 90f, subtitlePaint)
 
         val totalAppearances = identities.sumOf { it.totalAppearances }
         val metaPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.parseColor("#E2E8F0") // Slate 200
-            typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-            textSize = 38f
+            color = Color.parseColor("#A8A8A8") // Soft Gray
+            typeface = Typeface.DEFAULT
+            textSize = 36f
         }
         canvas.drawText(
-            "${identities.size} People Detected • $totalAppearances Total Appearances",
+            "${identities.size} people detected • $totalAppearances appearances",
             80f, headerTop + 150f, metaPaint
         )
 
@@ -102,6 +98,7 @@ class CollageRenderer(private val context: Context) {
         val tileHeight = (gridHeight - (rows - 1) * spacing) / rows
 
         // 4. Draw Identity Tiles
+        val candyColors = listOf("#FF2490", "#25A9E8", "#FFD83D", "#A8F02D")
         for ((index, identity) in identities.withIndex()) {
             val col = index % cols
             val row = index / cols
@@ -111,24 +108,28 @@ class CollageRenderer(private val context: Context) {
             val tileRight = tileLeft + tileWidth
             val tileBottom = tileTop + tileHeight
 
+            val colorHex = candyColors[index % candyColors.size]
+
             drawPersonTile(
                 canvas = canvas,
                 identity = identity,
-                rect = RectF(tileLeft, tileTop, tileRight, tileBottom)
+                rect = RectF(tileLeft, tileTop, tileRight, tileBottom),
+                accentColorHex = colorHex
             )
         }
 
         // 5. Draw Footer Watermark
         val footerPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.parseColor("#94A3B8") // Slate 400
+            color = Color.parseColor("#A8A8A8") // Soft Gray
             typeface = Typeface.DEFAULT
             textSize = 30f
             textAlign = Paint.Align.CENTER
         }
         canvas.drawText(
-            "Created on-device with iykyk • ML Kit & TFLite",
+            "created on-device with iykyk • on-device ml",
             canvasWidth / 2f, canvasHeight - 70f, footerPaint
         )
+
 
         return bitmap
     }
@@ -136,9 +137,10 @@ class CollageRenderer(private val context: Context) {
     private fun drawPersonTile(
         canvas: Canvas,
         identity: PersonIdentity,
-        rect: RectF
+        rect: RectF,
+        accentColorHex: String = "#FF2490"
     ) {
-        val cornerRadius = 32f
+        val cornerRadius = 36f
 
         // Save canvas state for clipped rounded rectangle drawing
         canvas.save()
@@ -146,6 +148,12 @@ class CollageRenderer(private val context: Context) {
             addRoundRect(rect, cornerRadius, cornerRadius, Path.Direction.CW)
         }
         canvas.clipPath(path)
+
+        // Draw Charcoal Card Background
+        val cardBgPaint = Paint().apply {
+            color = Color.parseColor("#242424")
+        }
+        canvas.drawRect(rect, cardBgPaint)
 
         // Draw cropped face bitmap scaled to fill tile (Center Crop)
         val srcBitmap = identity.croppedFaceBitmap
@@ -168,7 +176,7 @@ class CollageRenderer(private val context: Context) {
             shader = LinearGradient(
                 rect.left, rect.bottom - rect.height() * 0.45f,
                 rect.left, rect.bottom,
-                intArrayOf(Color.TRANSPARENT, Color.parseColor("#D00F172A")),
+                intArrayOf(Color.TRANSPARENT, Color.parseColor("#E6080808")),
                 floatArrayOf(0.0f, 1.0f),
                 Shader.TileMode.CLAMP
             )
@@ -177,11 +185,11 @@ class CollageRenderer(private val context: Context) {
 
         canvas.restore() // Restore unclipped canvas for border and overlays
 
-        // Draw Glassmorphism Border
+        // Draw Candy Accent Border
         val borderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             style = Paint.Style.STROKE
-            strokeWidth = 5f
-            color = Color.parseColor("#40FFFFFF") // 25% White border
+            strokeWidth = 6f
+            color = Color.parseColor(accentColorHex)
         }
         canvas.drawRoundRect(rect, cornerRadius, cornerRadius, borderPaint)
 
@@ -196,14 +204,14 @@ class CollageRenderer(private val context: Context) {
         )
 
         val badgeBgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.parseColor("#E60F172A") // 90% Slate 900
+            color = Color.parseColor("#FA242424") // Charcoal
         }
         canvas.drawRoundRect(badgeRect, 20f, 20f, badgeBgPaint)
 
         val badgeBorderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             style = Paint.Style.STROKE
             strokeWidth = 2.5f
-            color = Color.parseColor("#6366F1") // Indigo Accent
+            color = Color.parseColor(accentColorHex)
         }
         canvas.drawRoundRect(badgeRect, 20f, 20f, badgeBorderPaint)
 
@@ -213,7 +221,7 @@ class CollageRenderer(private val context: Context) {
             typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
             textSize = 28f
         }
-        val countText = "${identity.name} • ${identity.totalAppearances} Appearances"
+        val countText = "${identity.name.lowercase()} • ${identity.totalAppearances} appearances"
         canvas.drawText(
             countText,
             badgeRect.left + 24f,
@@ -222,3 +230,4 @@ class CollageRenderer(private val context: Context) {
         )
     }
 }
+

@@ -39,3 +39,5 @@ Thumbs.db
 /.navigation/
 
 doc/
+.kotlin/
+gradle/gradle-daemon-jvm.properties
