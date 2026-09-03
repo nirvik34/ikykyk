@@ -4,7 +4,7 @@ import com.iykyk.collage.model.AppearanceTrack
 import kotlin.math.sqrt
 
 class IdentityClusterer(
-    private val distanceThreshold: Float = 0.40f 
+    private val distanceThreshold: Float = 0.28f 
 ) {
 
     fun clusterIdentities(tracks: List<AppearanceTrack>): List<List<AppearanceTrack>> {
@@ -58,6 +58,10 @@ class IdentityClusterer(
         cluster1: List<AppearanceTrack>,
         cluster2: List<AppearanceTrack>
     ): Float {
+        if (hasCoOccurrence(cluster1, cluster2)) {
+            return Float.MAX_VALUE
+        }
+
         var totalDist = 0.0f
         var count = 0
 
@@ -73,6 +77,15 @@ class IdentityClusterer(
 
         if (count == 0) return 1.0f
         return totalDist / count
+    }
+
+    private fun hasCoOccurrence(
+        cluster1: List<AppearanceTrack>,
+        cluster2: List<AppearanceTrack>
+    ): Boolean {
+        val frames1 = cluster1.flatMap { it.frames }.map { it.frameIndex }.toSet()
+        val frames2 = cluster2.flatMap { it.frames }.map { it.frameIndex }.toSet()
+        return frames1.intersect(frames2).isNotEmpty()
     }
 
     private fun cosineDistance(emb1: FloatArray, emb2: FloatArray): Float {

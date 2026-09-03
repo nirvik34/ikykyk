@@ -91,8 +91,7 @@ class AppearanceSegmentTracker {
     }
 
     private fun convertToAppearanceTrack(track: MutableTrack): AppearanceTrack? {
-        if (track.frames.size < 2) {
-            
+        if (track.frames.isEmpty()) {
             return null
         }
 
@@ -100,13 +99,8 @@ class AppearanceSegmentTracker {
         val endMs = track.frames.last().timestampMs
         val durationMs = endMs - startMs
 
-        if (durationMs < 300L && track.frames.size < 3) {
-            return null
-        }
-
         val avgSharpness = track.frames.map { it.sharpnessScore }.average()
-        if (avgSharpness < 15.0) {
-            
+        if (avgSharpness < 5.0) {
             return null
         }
 
