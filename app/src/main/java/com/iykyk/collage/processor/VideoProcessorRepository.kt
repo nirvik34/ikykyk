@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import android.util.Log
 import com.iykyk.collage.collage.CollageRenderer
+import com.iykyk.collage.config.FaceConfig
 import com.iykyk.collage.ml.MLKitFaceDetector
 import com.iykyk.collage.ml.TFLiteEmbeddingExtractor
 import com.iykyk.collage.model.AppearanceTrack
@@ -34,13 +35,15 @@ class VideoProcessorRepository(private val context: Context) {
 
     suspend fun processVideo(videoUri: Uri): CollageResult? = withContext(Dispatchers.Default) {
         try {
+            FaceConfig.logConfig()
+
             _progress.value = ProcessingProgress(
                 stage = PipelineStage.EXTRACTING_FRAMES,
                 progressFraction = 0.05f,
                 message = "Extracting video frames..."
             )
 
-            val extractedFrames = frameExtractor.extractFrames(videoUri, sampleEveryMs = 160L) { currentMs, totalMs, count ->
+            val extractedFrames = frameExtractor.extractFrames(videoUri, sampleEveryMs = FaceConfig.samplingFps) { currentMs, totalMs, count ->
                 val frac = (currentMs.toFloat() / totalMs.toFloat()).coerceIn(0.0f, 1.0f) * 0.25f
                 _progress.value = ProcessingProgress(
                     stage = PipelineStage.EXTRACTING_FRAMES,
@@ -62,7 +65,9 @@ class VideoProcessorRepository(private val context: Context) {
             )
 
             val frameFacesMap = mutableMapOf<Int, List<FaceFrameInfo>>()
-            var totalFacesDetected = 0
+            var rawDetectionCount = 0
+            var validDetectionCount = 0
+            var rejectedCount = 0
 
             for ((idx, frame) in extractedFrames.withIndex()) {
                 val faces = faceDetector.detectFaces(
@@ -70,9 +75,14 @@ class VideoProcessorRepository(private val context: Context) {
                     frameIndex = frame.frameIndex,
                     timestampMs = frame.timestampMs
                 )
-                if (faces.isNotEmpty()) {
-                    frameFacesMap[frame.frameIndex] = faces
-                    totalFacesDetected += faces.size
+                rawDetectionCount += faces.size
+
+                val filteredFaces = faceDetector.filterDetections(faces)
+                validDetectionCount += filteredFaces.size
+                rejectedCount += faces.size - filteredFaces.size
+
+                if (filteredFaces.isNotEmpty()) {
+                    frameFacesMap[frame.frameIndex] = filteredFaces
                 }
 
                 val frac = (idx.toFloat() / extractedFrames.size.toFloat()) * 0.25f
@@ -81,7 +91,7 @@ class VideoProcessorRepository(private val context: Context) {
                     currentStep = idx + 1,
                     totalSteps = extractedFrames.size,
                     progressFraction = 0.30f + frac,
-                    message = "Detected $totalFacesDetected faces across ${idx + 1}/${extractedFrames.size} frames"
+                    message = "Detected $validDetectionCount faces ($rejectedCount rejected) across ${idx + 1}/${extractedFrames.size} frames"
                 )
             }
 
@@ -96,25 +106,25 @@ class VideoProcessorRepository(private val context: Context) {
             _progress.value = ProcessingProgress(
                 stage = PipelineStage.COMPUTING_EMBEDDINGS,
                 progressFraction = 0.65f,
-                message = "Generating on-device TFLite face embeddings..."
+                message = "Generating on-device face embeddings..."
             )
 
-            var validCropsCount = 0
             var embeddingsCount = 0
+            val allGoodFrames = mutableListOf<FaceFrameInfo>()
 
             for (track in rawTracks) {
                 for (frame in track.frames) {
                     val frameBitmap = frame.frameBitmap ?: continue
-                    val faceCrop = BitmapUtils.cropSquareFaceForEmbedding(
+                    val faceCrop = BitmapUtils.cropForEmbedding(
                         source = frameBitmap,
                         faceRect = frame.boundingBox,
-                        paddingFraction = 0.25f
+                        paddingFraction = FaceConfig.embeddingPaddingFraction
                     )
                     if (faceCrop != null) {
-                        validCropsCount++
                         val embedding = embeddingExtractor.extractEmbedding(faceCrop)
                         frame.embedding = embedding
                         embeddingsCount++
+                        allGoodFrames.add(frame)
                         if (faceCrop != frameBitmap && !faceCrop.isRecycled) {
                             faceCrop.recycle()
                         }
@@ -143,19 +153,21 @@ class VideoProcessorRepository(private val context: Context) {
                 val identity = representativeShotSelector.selectRepresentativeShot(
                     personId = personId,
                     personName = personName,
-                    appearances = trackGroup
+                    appearances = trackGroup,
+                    allFrames = allGoodFrames
                 )
                 identities.add(identity)
             }
 
             logPipelineDiagnostics(
-                sampledFramesCount = extractedFrames.size,
-                totalDetectedFaces = totalFacesDetected,
-                validCropsCount = validCropsCount,
-                embeddingsCount = embeddingsCount,
+                framesProcessed = extractedFrames.size,
+                rawDetections = rawDetectionCount,
+                validDetections = validDetectionCount,
+                rejectedDetections = rejectedCount,
                 rawTracks = rawTracks,
                 clusteredTrackGroups = clusteredTrackGroups,
-                identities = identities
+                identities = identities,
+                embeddingsCount = embeddingsCount
             )
 
             _progress.value = ProcessingProgress(
@@ -188,68 +200,45 @@ class VideoProcessorRepository(private val context: Context) {
     }
 
     private fun logPipelineDiagnostics(
-        sampledFramesCount: Int,
-        totalDetectedFaces: Int,
-        validCropsCount: Int,
-        embeddingsCount: Int,
+        framesProcessed: Int,
+        rawDetections: Int,
+        validDetections: Int,
+        rejectedDetections: Int,
         rawTracks: List<AppearanceTrack>,
         clusteredTrackGroups: List<List<AppearanceTrack>>,
-        identities: List<PersonIdentity>
+        identities: List<PersonIdentity>,
+        embeddingsCount: Int
     ) {
         val tag = "IYKYK_DIAGNOSTICS"
         Log.i(tag, "=================== IYKYK PIPELINE DIAGNOSTICS ===================")
-        Log.i(tag, "1. SAMPLED FRAMES: $sampledFramesCount frames extracted (sampled every 160ms)")
-        Log.i(tag, "2. DETECTED FACES: $totalDetectedFaces total faces across all frames")
-        Log.i(tag, "3. FACE CROPS & EMBEDDINGS:")
-        Log.i(tag, "   - Square Face Crops: $validCropsCount valid square face crops")
-        Log.i(tag, "   - TFLite Embeddings: $embeddingsCount valid 192-d L2-normalized embeddings generated")
-        Log.i(tag, "4. APPEARANCE TRACKS: ${rawTracks.size} continuous appearance segments")
+        Log.i(tag, "Frames processed: $framesProcessed")
+        Log.i(tag, "Raw detections: $rawDetections")
+        Log.i(tag, "Valid detections: $validDetections")
+        Log.i(tag, "Rejected detections: $rejectedDetections")
+        Log.i(tag, "Embeddings generated: $embeddingsCount")
+        Log.i(tag, "Appearance tracks: ${rawTracks.size}")
         for (t in rawTracks) {
-            Log.i(
-                tag,
-                "   - Track ${t.trackId}: ${t.frames.size} frames (${t.startTimeMs}ms - ${t.endTimeMs}ms, duration ${t.durationMs}ms)"
-            )
+            Log.i(tag, "   - Track ${t.trackId}: ${t.frames.size} frames (${t.startTimeMs}ms - ${t.endTimeMs}ms, ${t.appearanceCount} appearances)")
         }
-        Log.i(tag, "5. IDENTITY CLUSTERS: ${clusteredTrackGroups.size} unique person identities created")
+        Log.i(tag, "Initial identities (clusters): ${clusteredTrackGroups.size}")
+
+        val mergeCount = rawTracks.size - clusteredTrackGroups.sumOf { it.size }
+        Log.i(tag, "Identities merged: $mergeCount")
+
         for ((idx, group) in clusteredTrackGroups.withIndex()) {
             val trackIds = group.map { it.trackId }
             val totalFrames = group.sumOf { it.frames.size }
-            Log.i(tag, "   - Identity ${idx + 1} ('Person ${idx + 1}'): tracks $trackIds, total frames: $totalFrames")
+            val totalApp = group.sumOf { it.appearanceCount }
+            Log.i(tag, "   - Identity ${idx + 1}: tracks $trackIds, frames: $totalFrames, appearances: $totalApp")
         }
-        Log.i(tag, "6. REPRESENTATIVE SHOTS:")
+
+        Log.i(tag, "Final identities: ${identities.size}")
+        Log.i(tag, "Representative shots quality:")
         for (id in identities) {
-            val shot = id.bestShot
-            val score = representativeShotSelector.calculateDetailedScore(shot)
-            Log.i(
-                tag,
-                "   - ${id.name}: best frameIndex=${shot.frameIndex}, timestampMs=${shot.timestampMs}ms, qualityScore=${String.format("%.4f", score)}"
-            )
+            val score = BitmapUtils.computeFaceQualityScore(id.bestShot)
+            Log.i(tag, "   - ${id.name}: frameIndex=${id.bestShot.frameIndex}, quality=${String.format("%.4f", score)}, appearances=${id.totalAppearances}")
         }
 
-        Log.i(tag, "7. PAIRWISE COSINE DISTANCE MATRIX (Representative Embeddings):")
-        if (identities.isNotEmpty()) {
-            val n = identities.size
-            val header = StringBuilder("               ")
-            for (i in 1..n) {
-                header.append(String.format(" [P%d]  ", i))
-            }
-            Log.i(tag, header.toString())
-
-            for (i in 0 until n) {
-                val row = StringBuilder(String.format("[Person %d]   ", i + 1))
-                val embI = identities[i].bestShot.embedding
-                for (j in 0 until n) {
-                    val embJ = identities[j].bestShot.embedding
-                    if (embI != null && embJ != null) {
-                        val dist = identityClusterer.cosineDistance(embI, embJ)
-                        row.append(String.format(" %.4f", dist))
-                    } else {
-                        row.append("   N/A  ")
-                    }
-                }
-                Log.i(tag, row.toString())
-            }
-        }
         Log.i(tag, "==================================================================")
     }
 

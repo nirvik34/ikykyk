@@ -93,7 +93,6 @@ fun CollageResultScreen(
             .padding(horizontal = 20.dp, vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Top App Bar
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -147,7 +146,6 @@ fun CollageResultScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Story Style Editorial Photo Collage Preview Card
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -174,7 +172,6 @@ fun CollageResultScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Layout Template Selector Section
         Column(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.Start
@@ -207,7 +204,6 @@ fun CollageResultScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Main Action Buttons
         Column(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(10.dp)
@@ -271,7 +267,6 @@ fun CollageResultScreen(
 
         Spacer(modifier = Modifier.height(28.dp))
 
-        // People Found Section Header
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
@@ -304,7 +299,6 @@ fun CollageResultScreen(
 
         Spacer(modifier = Modifier.height(14.dp))
 
-        // Horizontal Row of Person Cards
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(14.dp),
             modifier = Modifier.fillMaxWidth()
@@ -354,7 +348,6 @@ fun TemplateOptionCard(
                 .padding(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Visual Mini Layout Representation
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -366,71 +359,26 @@ fun TemplateOptionCard(
             ) {
                 when (template) {
                     LayoutTemplate.EDITORIAL -> {
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(2.dp),
-                            modifier = Modifier.fillMaxSize()
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .weight(1.5f)
-                                    .clip(RoundedCornerShape(2.dp))
-                                    .background(if (isSelected) InkBlack else SubtleText.copy(alpha = 0.5f))
-                            )
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(2.dp),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .weight(1f)
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .fillMaxSize()
-                                        .clip(RoundedCornerShape(2.dp))
-                                        .background(SubtleText.copy(alpha = 0.3f))
-                                )
-                                Box(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .fillMaxSize()
-                                        .clip(RoundedCornerShape(2.dp))
-                                        .background(SubtleText.copy(alpha = 0.3f))
-                                )
+                        Column(verticalArrangement = Arrangement.spacedBy(2.dp), modifier = Modifier.fillMaxSize()) {
+                            Box(modifier = Modifier.fillMaxWidth().weight(1.5f).clip(RoundedCornerShape(2.dp)).background(if (isSelected) InkBlack else SubtleText.copy(alpha = 0.5f)))
+                            Row(horizontalArrangement = Arrangement.spacedBy(2.dp), modifier = Modifier.fillMaxWidth().weight(1f)) {
+                                Box(modifier = Modifier.weight(1f).fillMaxSize().clip(RoundedCornerShape(2.dp)).background(SubtleText.copy(alpha = 0.3f)))
+                                Box(modifier = Modifier.weight(1f).fillMaxSize().clip(RoundedCornerShape(2.dp)).background(SubtleText.copy(alpha = 0.3f)))
                             }
                         }
                     }
                     LayoutTemplate.FILM_STRIP -> {
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(2.dp),
-                            modifier = Modifier.fillMaxSize()
-                        ) {
+                        Column(verticalArrangement = Arrangement.spacedBy(2.dp), modifier = Modifier.fillMaxSize()) {
                             repeat(3) {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .weight(1f)
-                                        .clip(RoundedCornerShape(2.dp))
-                                        .background(if (isSelected) InkBlack else SubtleText.copy(alpha = 0.4f))
-                                )
+                                Box(modifier = Modifier.fillMaxWidth().weight(1f).clip(RoundedCornerShape(2.dp)).background(if (isSelected) InkBlack else SubtleText.copy(alpha = 0.4f)))
                             }
                         }
                     }
                     LayoutTemplate.POLAROID -> {
-                        Box(
-                            modifier = Modifier
-                                .size(24.dp)
-                                .clip(RoundedCornerShape(3.dp))
-                                .background(if (isSelected) InkBlack else SubtleText.copy(alpha = 0.4f))
-                        )
+                        Box(modifier = Modifier.size(24.dp).clip(RoundedCornerShape(3.dp)).background(if (isSelected) InkBlack else SubtleText.copy(alpha = 0.4f)))
                     }
                     LayoutTemplate.FULL_BLEED -> {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clip(RoundedCornerShape(4.dp))
-                                .background(if (isSelected) InkBlack else SubtleText.copy(alpha = 0.4f))
-                        )
+                        Box(modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(4.dp)).background(if (isSelected) InkBlack else SubtleText.copy(alpha = 0.4f)))
                     }
                 }
             }
@@ -473,9 +421,9 @@ fun PersonCard(
                 contentDescription = person.name,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .size(80.dp)
-                    .clip(CircleShape)
-                    .border(3.dp, ringColor, CircleShape)
+                    .size(110.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .border(3.dp, ringColor, RoundedCornerShape(12.dp))
             )
 
             Spacer(modifier = Modifier.height(10.dp))
@@ -487,7 +435,7 @@ fun PersonCard(
                 color = InkBlack
             )
 
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(6.dp))
 
             Box(
                 modifier = Modifier
@@ -496,14 +444,14 @@ fun PersonCard(
                     .padding(horizontal = 10.dp, vertical = 4.dp)
             ) {
                 Text(
-                    text = "${person.totalAppearances} appearances",
-                    fontSize = 11.sp,
+                    text = "${person.totalAppearances}×",
+                    fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
                     color = InkBlack
                 )
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(6.dp))
 
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
@@ -549,9 +497,7 @@ fun AuditDialog(
             }
         },
         text = {
-            Column(
-                modifier = Modifier.fillMaxWidth()
-            ) {
+            Column(modifier = Modifier.fillMaxWidth()) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.padding(bottom = 12.dp)
@@ -567,67 +513,30 @@ fun AuditDialog(
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
-                        Text(
-                            text = "appearances: ${person.totalAppearances}",
-                            color = InkBlack,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 14.sp
-                        )
-                        Text(
-                            text = "visible: ${"%.1f".format(person.totalVisibleDurationMs / 1000.0f)} seconds",
-                            color = SubtleText,
-                            fontSize = 13.sp
-                        )
+                        Text("appearances: ${person.totalAppearances}", color = InkBlack, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Text("visible: ${"%.1f".format(person.totalVisibleDurationMs / 1000.0f)} seconds", color = SubtleText, fontSize = 13.sp)
                     }
                 }
 
                 HorizontalDivider(color = OutlineBorder)
                 Spacer(modifier = Modifier.height(12.dp))
 
-                Text(
-                    text = "appearance timeline:",
-                    color = InkBlack,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 13.sp
-                )
-
+                Text("appearance timeline:", color = InkBlack, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     person.appearances.forEachIndexed { index, track ->
-                        Card(
-                            colors = CardDefaults.cardColors(containerColor = CanvasBg),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
+                        Card(colors = CardDefaults.cardColors(containerColor = CanvasBg), modifier = Modifier.fillMaxWidth()) {
                             Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(10.dp),
+                                modifier = Modifier.fillMaxWidth().padding(10.dp),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Column {
-                                    Text(
-                                        text = "appearance #${index + 1}",
-                                        color = InkBlack,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 13.sp
-                                    )
-                                    Text(
-                                        text = "time: ${"%.2f".format(track.startTimeMs / 1000f)}s - ${"%.2f".format(track.endTimeMs / 1000f)}s",
-                                        color = SubtleText,
-                                        fontSize = 12.sp
-                                    )
+                                    Text("appearance #${index + 1}", color = InkBlack, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                    Text("time: ${"%.2f".format(track.startTimeMs / 1000f)}s - ${"%.2f".format(track.endTimeMs / 1000f)}s", color = SubtleText, fontSize = 12.sp)
                                 }
-
-                                Text(
-                                    text = "${track.frameCount} frames",
-                                    color = InkBlack,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 12.sp
-                                )
+                                Text("${track.frameCount} frames", color = InkBlack, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                             }
                         }
                     }
@@ -635,9 +544,7 @@ fun AuditDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text("close", color = InkBlack, fontWeight = FontWeight.Bold)
-            }
+            TextButton(onClick = onDismiss) { Text("close", color = InkBlack, fontWeight = FontWeight.Bold) }
         }
     )
 }
