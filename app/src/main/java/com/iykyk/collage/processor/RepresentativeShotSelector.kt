@@ -20,25 +20,34 @@ class RepresentativeShotSelector {
         appearances: List<AppearanceTrack>,
         allFrames: List<FaceFrameInfo>
     ): PersonIdentity {
-        val goodFrames = allFrames.filter { frame ->
+        val identityFrameIndices = appearances.flatMap { it.frames.map { it.frameIndex } }.toSet()
+
+        val identityFrames = allFrames.filter { frame ->
+            frame.frameIndex in identityFrameIndices &&
             frame.overallQualityScore >= FaceConfig.minQuality &&
             frame.embedding != null &&
             frame.faceWidth >= FaceConfig.minFaceSize &&
             frame.faceHeight >= FaceConfig.minFaceSize
         }
 
-        val bestFrame = if (goodFrames.isNotEmpty()) {
-            goodFrames.maxByOrNull { BitmapUtils.computeFaceQualityScore(it) }!!
-        } else {
+        if (identityFrames.isEmpty()) {
             val fallbackFrames = appearances.flatMap { it.frames }.filter { it.overallQualityScore > 0 }
             if (fallbackFrames.isEmpty()) {
                 throw IllegalStateException("No valid frames for $personName")
             }
-            fallbackFrames.maxByOrNull { it.overallQualityScore } ?: fallbackFrames.first()
+            val bestFrame = fallbackFrames.maxByOrNull { it.overallQualityScore } ?: fallbackFrames.first()
+            val sourceBitmap = bestFrame.frameBitmap ?: throw IllegalStateException("Frame bitmap null")
+            val crop = BitmapUtils.cropFacePortrait(sourceBitmap, bestFrame.boundingBox, FaceConfig.cropPadding)
+            return PersonIdentity(
+                id = personId, name = personName, appearances = appearances,
+                bestShot = bestFrame, croppedFaceBitmap = crop ?: sourceBitmap, quality = 0f
+            )
         }
 
+        val bestFrame = identityFrames.maxByOrNull { BitmapUtils.computeFaceQualityScore(it) }!!
+
         val score = BitmapUtils.computeFaceQualityScore(bestFrame)
-        Log.i(TAG, "Selected best shot for $personName: frameIndex=${bestFrame.frameIndex}, quality=$score")
+        Log.i(TAG, "Selected best shot for $personName (ID $personId): frameIndex=${bestFrame.frameIndex}, quality=$score")
 
         val sourceBitmap = bestFrame.frameBitmap
             ?: throw IllegalStateException("Frame bitmap is null for representative shot")
@@ -50,7 +59,8 @@ class RepresentativeShotSelector {
         )
 
         val alternateImages = selectAlternateImages(
-            allFrames = goodFrames,
+            allFrames = allFrames,
+            identityFrameIndices = identityFrameIndices,
             bestFrame = bestFrame,
             sourceBitmap = sourceBitmap
         )
@@ -68,14 +78,18 @@ class RepresentativeShotSelector {
 
     private fun selectAlternateImages(
         allFrames: List<FaceFrameInfo>,
+        identityFrameIndices: Set<Int>,
         bestFrame: FaceFrameInfo,
         sourceBitmap: Bitmap
     ): List<Bitmap> {
         val alternates = mutableListOf<Bitmap>()
         val usedFrames = mutableListOf<FaceFrameInfo>()
 
-        val sortedByQuality = allFrames
-            .filter { it.frameIndex != bestFrame.frameIndex }
+        val identityFrames = allFrames.filter {
+            it.frameIndex in identityFrameIndices && it.frameIndex != bestFrame.frameIndex
+        }
+
+        val sortedByQuality = identityFrames
             .sortedByDescending { BitmapUtils.computeFaceQualityScore(it) }
 
         for (frame in sortedByQuality) {
@@ -94,7 +108,7 @@ class RepresentativeShotSelector {
                 faceRect = frame.boundingBox,
                 paddingFraction = FaceConfig.cropPadding
             )
-            if (crop != null && !crop.isRecycled) {
+            if (!crop.isRecycled) {
                 alternates.add(crop)
                 usedFrames.add(frame)
             }

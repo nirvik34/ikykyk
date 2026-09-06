@@ -30,10 +30,8 @@ object BitmapUtils {
         var right = min(source.width, cx + faceW / 2 + padding)
         var bottom = min(source.height, cy + faceH / 2 + padding)
 
-        val cropW = right - left
-        val cropH = bottom - top
-
-        if (cropW <= 0 || cropH <= 0) return source
+        var cropW = max(1, right - left)
+        var cropH = max(1, bottom - top)
 
         val targetRatio = FaceConfig.cropTargetAspectRatio
         val currentRatio = cropW.toFloat() / cropH.toFloat()
@@ -53,10 +51,8 @@ object BitmapUtils {
             finalRight = min(source.width, finalLeft + newW)
         }
 
-        val finalW = finalRight - finalLeft
-        val finalH = finalBottom - finalTop
-
-        if (finalW <= 0 || finalH <= 0) return source
+        val finalW = max(1, finalRight - finalLeft)
+        val finalH = max(1, finalBottom - finalTop)
 
         return Bitmap.createBitmap(source, finalLeft, finalTop, finalW, finalH)
     }

@@ -176,6 +176,8 @@ class VideoProcessorRepository(private val context: Context) {
                 message = "Rendering shareable collage..."
             )
 
+            verifyIdentityImages(identities)
+
             val collageBitmap = collageRenderer.renderCollage(identities)
 
             _progress.value = ProcessingProgress(
@@ -197,6 +199,27 @@ class VideoProcessorRepository(private val context: Context) {
             )
             return@withContext null
         }
+    }
+
+    private fun verifyIdentityImages(identities: List<PersonIdentity>) {
+        val tag = "IYKYK_IMAGE_VERIFY"
+        Log.i(tag, "=== IDENTITY IMAGE VERIFICATION ===")
+        val imageKeys = mutableMapOf<String, Int>()
+        for (identity in identities) {
+            val bestFrame = identity.bestShot
+            val frameIndex = bestFrame.frameIndex
+            val bbox = bestFrame.boundingBox
+            val quality = BitmapUtils.computeFaceQualityScore(bestFrame)
+            val imageKey = "frame$frameIndex|${bbox.left},${bbox.top},${bbox.width()},${bbox.height()}"
+            Log.i(tag, "${identity.name}: frame=$frameIndex bbox=$bbox quality=$quality")
+            if (imageKeys.containsKey(imageKey)) {
+                Log.w(tag, "DUPLICATE: ${identity.name} shares image with person ${imageKeys[imageKey]}")
+            } else {
+                imageKeys[imageKey] = identity.id
+            }
+        }
+        Log.i(tag, "Unique image references: ${imageKeys.size}/${identities.size}")
+        Log.i(tag, "=== END IMAGE VERIFICATION ===")
     }
 
     private fun logPipelineDiagnostics(
