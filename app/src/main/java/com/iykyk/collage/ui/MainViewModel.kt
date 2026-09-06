@@ -90,7 +90,8 @@ class MainViewModel : ViewModel() {
         viewModelScope.launch {
             val newBitmap = withContext(Dispatchers.Default) {
                 renderer.renderCollage(
-                    identities = currentResult.identities
+                    identities = currentResult.identities,
+                    template = template
                 )
             }
 

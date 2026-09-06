@@ -12,6 +12,7 @@ import android.graphics.RectF
 import android.graphics.Shader
 import com.iykyk.collage.config.FaceConfig
 import com.iykyk.collage.model.CollageResult
+import com.iykyk.collage.model.LayoutTemplate
 import com.iykyk.collage.model.PersonIdentity
 import kotlin.math.ceil
 import kotlin.math.max
@@ -21,24 +22,20 @@ class CollageRenderer(private val context: Context) {
 
     fun renderCollage(
         identities: List<PersonIdentity>,
+        template: LayoutTemplate = LayoutTemplate.EDITORIAL,
         canvasWidth: Int = 1080,
         canvasHeight: Int = 1920
     ): Bitmap {
         val n = max(1, identities.size)
-        val layout = getLayoutConfig(n, canvasWidth)
 
-        return when {
-            layout.columns == 1 && n == 1 -> renderSinglePortrait(identities, canvasWidth, canvasHeight)
-            else -> renderGridLayout(identities, canvasWidth, canvasHeight, layout)
-        }
-    }
-
-    private fun getLayoutConfig(count: Int, width: Int): LayoutConfig {
-        return when {
-            count == 1 -> LayoutConfig(columns = 1, aspectRatio = 4f / 5f)
-            count <= 4 -> LayoutConfig(columns = 2, aspectRatio = 4f / 5f)
-            count <= 9 -> LayoutConfig(columns = 3, aspectRatio = 4f / 5f)
-            else -> LayoutConfig(columns = if (width < 600) 2 else 4, aspectRatio = 4f / 5f)
+        return when (template) {
+            LayoutTemplate.EDITORIAL -> {
+                if (n == 1) renderSinglePortrait(identities, canvasWidth, canvasHeight)
+                else renderGridLayout(identities, canvasWidth, canvasHeight)
+            }
+            LayoutTemplate.FILM_STRIP -> renderFilmStripLayout(identities, canvasWidth, canvasHeight)
+            LayoutTemplate.POLAROID -> renderPolaroidLayout(identities, canvasWidth, canvasHeight)
+            LayoutTemplate.FULL_BLEED -> renderFullBleedLayout(identities, canvasWidth, canvasHeight)
         }
     }
 
@@ -46,8 +43,8 @@ class CollageRenderer(private val context: Context) {
         identities: List<PersonIdentity>,
         canvasWidth: Int,
         canvasHeight: Int,
-        layout: LayoutConfig
     ): Bitmap {
+        val layout = getLayoutConfig(identities.size, canvasWidth)
         val bitmap = Bitmap.createBitmap(canvasWidth, canvasHeight, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
 
@@ -95,6 +92,166 @@ class CollageRenderer(private val context: Context) {
         return bitmap
     }
 
+    private fun renderFilmStripLayout(
+        identities: List<PersonIdentity>,
+        canvasWidth: Int,
+        canvasHeight: Int
+    ): Bitmap {
+        val bitmap = Bitmap.createBitmap(canvasWidth, canvasHeight, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+
+        drawDarkBackground(canvas, canvasWidth, canvasHeight)
+
+        val stripHeight = canvasHeight * 0.45f
+        val stripTop = canvasHeight * 0.30f
+        val stripBottom = stripTop + stripHeight
+        val stripLeft = 40f
+        val stripRight = canvasWidth - 40f
+        val stripWidth = stripRight - stripLeft
+
+        val n = max(1, identities.size)
+        val tileWidth = (stripWidth - (n - 1) * 12f) / n
+        val candyColors = listOf("#FF2490", "#25A9E8", "#FFD83D", "#A8F02D", "#FF6B9D", "#4ECDC4")
+
+        val namePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.WHITE
+            typeface = android.graphics.Typeface.create(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD)
+            textSize = 22f
+        }
+        val countPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.parseColor("#A8A8A8")
+            typeface = android.graphics.Typeface.DEFAULT
+            textSize = 18f
+        }
+
+        for ((index, identity) in identities.withIndex()) {
+            val tileLeft = stripLeft + index * (tileWidth + 12f)
+            val tileRight = tileLeft + tileWidth
+            val srcBitmap = identity.croppedFaceBitmap
+            val srcRect = computeSrcRect(srcBitmap, RectF(tileLeft, stripTop, tileRight, stripBottom))
+
+            canvas.drawRect(tileLeft, stripTop, tileRight, stripBottom, Paint().apply { color = Color.parseColor("#1A1A1A") })
+            canvas.drawBitmap(srcBitmap, srcRect, RectF(tileLeft, stripTop, tileRight, stripBottom), Paint(Paint.FILTER_BITMAP_FLAG))
+
+            canvas.drawRect(tileLeft, stripTop, tileRight, stripBottom, Paint().apply {
+                color = Color.parseColor(accentColors(index))
+                alpha = 40
+            })
+
+            val nameY = stripBottom + 30f
+            canvas.drawText(identity.name.lowercase(), tileLeft + 8f, nameY, namePaint)
+            canvas.drawText("  ${identity.totalAppearances}×", tileLeft + 8f, nameY + 22f, countPaint)
+        }
+
+        drawFooter(canvas, canvasWidth, canvasHeight)
+        return bitmap
+    }
+
+    private fun renderPolaroidLayout(
+        identities: List<PersonIdentity>,
+        canvasWidth: Int,
+        canvasHeight: Int
+    ): Bitmap {
+        val bitmap = Bitmap.createBitmap(canvasWidth, canvasHeight, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+
+        drawDarkBackground(canvas, canvasWidth, canvasHeight)
+
+        val n = max(1, identities.size)
+        val cols = min(3, n)
+        val rows = ceil(n.toDouble() / cols).toInt()
+
+        val polaroidWidth = canvasWidth * 0.28f
+        val polaroidHeight = polaroidWidth * 1.2f
+        val spacingX = (canvasWidth - cols * polaroidWidth) / (cols + 1)
+        val spacingY = (canvasHeight - rows * polaroidHeight - 200f) / (rows + 1)
+
+        val candyColors = listOf("#FF2490", "#25A9E8", "#FFD83D", "#A8F02D", "#FF6B9D", "#4ECDC4")
+
+        val namePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.WHITE
+            typeface = android.graphics.Typeface.create(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD)
+            textSize = 20f
+        }
+
+        for ((index, identity) in identities.withIndex()) {
+            val col = index % cols
+            val row = index / cols
+
+            val photoLeft = spacingX + col * (polaroidWidth + spacingX)
+            val photoTop = spacingY + row * (polaroidHeight + spacingY)
+            val photoRight = photoLeft + polaroidWidth
+            val photoBottom = photoTop + polaroidHeight
+
+            val borderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                color = Color.WHITE
+                style = Paint.Style.STROKE
+                strokeWidth = 4f
+            }
+
+            canvas.drawRect(photoLeft - 8f, photoTop - 8f, photoRight + 8f, photoBottom + 8f, Paint().apply { color = Color.parseColor("#2A2A2A") })
+            canvas.drawRect(photoLeft, photoTop, photoRight, photoBottom, Paint().apply { color = Color.parseColor("#FAFAFA") })
+            canvas.drawRect(photoLeft, photoTop, photoRight, photoBottom, borderPaint)
+
+            val srcBitmap = identity.croppedFaceBitmap
+            val srcRect = computeSrcRect(srcBitmap, RectF(photoLeft + 4f, photoTop + 4f, photoRight - 4f, photoBottom - 28f))
+            canvas.drawBitmap(srcBitmap, srcRect, RectF(photoLeft + 4f, photoTop + 4f, photoRight - 4f, photoBottom - 28f), Paint(Paint.FILTER_BITMAP_FLAG))
+
+            val nameY = photoBottom - 8f
+            canvas.drawText(identity.name.lowercase(), photoLeft + 12f, nameY, namePaint)
+        }
+
+        drawFooter(canvas, canvasWidth, canvasHeight)
+        return bitmap
+    }
+
+    private fun renderFullBleedLayout(
+        identities: List<PersonIdentity>,
+        canvasWidth: Int,
+        canvasHeight: Int
+    ): Bitmap {
+        val bitmap = Bitmap.createBitmap(canvasWidth, canvasHeight, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+
+        val n = max(1, identities.size)
+        val candyColors = listOf("#FF2490", "#25A9E8", "#FFD83D", "#A8F02D", "#FF6B9D", "#4ECDC4")
+
+        for ((index, identity) in identities.withIndex()) {
+            val srcBitmap = identity.croppedFaceBitmap
+            val color = Color.parseColor(accentColors(index))
+
+            if (n == 1) {
+                val srcRect = computeSrcRect(srcBitmap, RectF(0f, 0f, canvasWidth.toFloat(), canvasHeight.toFloat()))
+                canvas.drawBitmap(srcBitmap, srcRect, RectF(0f, 0f, canvasWidth.toFloat(), canvasHeight.toFloat()), Paint(Paint.FILTER_BITMAP_FLAG))
+            } else {
+                val tileWidth = canvasWidth / n.toFloat()
+                val srcRect = computeSrcRect(srcBitmap, RectF(0f, 0f, tileWidth, canvasHeight.toFloat()))
+                canvas.drawBitmap(srcBitmap, srcRect, RectF(index * tileWidth, 0f, (index + 1) * tileWidth, canvasHeight.toFloat()), Paint(Paint.FILTER_BITMAP_FLAG))
+                val overlayPaint = Paint().apply { this.color = color; this.alpha = 30 }
+                canvas.drawRect(0f, 0f, canvasWidth.toFloat(), canvasHeight.toFloat(), overlayPaint)
+            }
+        }
+
+        val labelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.WHITE
+            typeface = android.graphics.Typeface.create(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD)
+            textSize = 28f
+        }
+        val countPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.parseColor("#A8A8A8")
+            typeface = android.graphics.Typeface.DEFAULT
+            textSize = 22f
+        }
+
+        for ((index, identity) in identities.withIndex()) {
+            val x = if (n == 1) canvasWidth / 2f else index * (canvasWidth / n.toFloat()) + canvasWidth / n.toFloat() / 2f
+            canvas.drawText(identity.name.lowercase(), x - 40f, canvasHeight - 60f, labelPaint)
+            canvas.drawText("  ${identity.totalAppearances}×", x - 40f, canvasHeight - 30f, countPaint)
+        }
+
+        return bitmap
+    }
+
     private fun renderSinglePortrait(
         identities: List<PersonIdentity>,
         canvasWidth: Int,
@@ -138,6 +295,15 @@ class CollageRenderer(private val context: Context) {
 
         drawFooter(canvas, canvasWidth, canvasHeight)
         return bitmap
+    }
+
+    private fun getLayoutConfig(count: Int, width: Int): LayoutConfig {
+        return when {
+            count == 1 -> LayoutConfig(columns = 1, aspectRatio = 4f / 5f)
+            count <= 4 -> LayoutConfig(columns = 2, aspectRatio = 4f / 5f)
+            count <= 9 -> LayoutConfig(columns = 3, aspectRatio = 4f / 5f)
+            else -> LayoutConfig(columns = if (width < 600) 2 else 4, aspectRatio = 4f / 5f)
+        }
     }
 
     private fun computeSrcRect(srcBitmap: Bitmap, destRect: RectF): Rect {
@@ -246,6 +412,11 @@ class CollageRenderer(private val context: Context) {
             textAlign = Paint.Align.CENTER
         }
         canvas.drawText("created on-device with cameo", canvasWidth / 2f, canvasHeight - 50f, footerPaint)
+    }
+
+    private fun accentColors(index: Int): String {
+        val candyColors = listOf("#FF2490", "#25A9E8", "#FFD83D", "#A8F02D", "#FF6B9D", "#4ECDC4")
+        return candyColors[index % candyColors.size]
     }
 }
 

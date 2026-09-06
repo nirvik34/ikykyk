@@ -10,6 +10,7 @@ import com.iykyk.collage.ml.TFLiteEmbeddingExtractor
 import com.iykyk.collage.model.AppearanceTrack
 import com.iykyk.collage.model.CollageResult
 import com.iykyk.collage.model.FaceFrameInfo
+import com.iykyk.collage.model.LayoutTemplate
 import com.iykyk.collage.model.PersonIdentity
 import com.iykyk.collage.model.PipelineStage
 import com.iykyk.collage.model.ProcessingProgress
@@ -178,7 +179,7 @@ class VideoProcessorRepository(private val context: Context) {
 
             verifyIdentityImages(identities)
 
-            val collageBitmap = collageRenderer.renderCollage(identities)
+            val collageBitmap = collageRenderer.renderCollage(identities, LayoutTemplate.EDITORIAL)
 
             _progress.value = ProcessingProgress(
                 stage = PipelineStage.COMPLETED,
