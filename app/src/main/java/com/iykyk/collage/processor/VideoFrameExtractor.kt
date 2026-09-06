@@ -37,7 +37,7 @@ class VideoFrameExtractor(private val context: Context) {
 
             while (currentMs < durationMs) {
                 val timeUs = currentMs * 1000L
-                val rawBitmap = retriever.getFrameAtTime(timeUs, MediaMetadataRetriever.OPTION_CLOSEST_SYNC)
+                val rawBitmap = retriever.getFrameAtTime(timeUs, MediaMetadataRetriever.OPTION_CLOSEST)
 
                 if (rawBitmap != null) {
                     val orientedBitmap = if (rotation != 0) {

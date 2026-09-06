@@ -29,6 +29,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -79,7 +80,16 @@ fun ProcessingScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(ProcessingLilac)
+            .background(
+                Brush.linearGradient(
+                    listOf(
+                        Color(0xFF1A0A2E),
+                        Color(0xFF2D1B69),
+                        Color(0xFF1B0A3C),
+                        Color(0xFF0D1B2A)
+                    )
+                )
+            )
             .verticalScroll(scrollState)
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally

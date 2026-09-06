@@ -1,10 +1,13 @@
 package com.iykyk.collage.processor
 
 import android.graphics.Rect
+import com.iykyk.collage.config.FaceConfig
+import com.iykyk.collage.model.AppearanceSegment
 import com.iykyk.collage.model.AppearanceTrack
 import com.iykyk.collage.model.FaceFrameInfo
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.sqrt
 
 class AppearanceSegmentTracker {
 
@@ -19,13 +22,14 @@ class AppearanceSegmentTracker {
 
         for (frameIdx in sortedFrameIndices) {
             val facesInFrame = allFrameFaces[frameIdx] ?: continue
+            val sortedFaces = facesInFrame.sortedByDescending { it.overallQualityScore }
 
             val assignedTrackIndices = HashSet<Int>()
             val assignedFaceIndices = HashSet<Int>()
 
-            for ((faceIdx, face) in facesInFrame.withIndex()) {
+            for ((faceIdx, face) in sortedFaces.withIndex()) {
                 var bestTrackIdx = -1
-                var bestIou = 0.0f
+                var bestScore = 0.0f
 
                 for ((trackIdx, track) in activeTracks.withIndex()) {
                     if (assignedTrackIndices.contains(trackIdx)) continue
@@ -33,10 +37,11 @@ class AppearanceSegmentTracker {
                     val lastFace = track.frames.last()
                     val timeDeltaMs = face.timestampMs - lastFace.timestampMs
 
-                    if (timeDeltaMs <= 1200L) {
+                    if (timeDeltaMs <= FaceConfig.trackMaxAgeMs) {
                         val iou = calculateIoU(face.boundingBox, lastFace.boundingBox)
-                        if (iou > 0.15f && iou > bestIou) {
-                            bestIou = iou
+                        val proximityScore = computeTrackingScore(iou, timeDeltaMs, face, lastFace)
+                        if (proximityScore > FaceConfig.trackMatchIoU && proximityScore > bestScore) {
+                            bestScore = proximityScore
                             bestTrackIdx = trackIdx
                         }
                     }
@@ -53,8 +58,7 @@ class AppearanceSegmentTracker {
             for ((trackIdx, track) in activeTracks.withIndex()) {
                 if (!assignedTrackIndices.contains(trackIdx)) {
                     val lastTimestamp = track.frames.last().timestampMs
-                    val currentTimestamp = facesInFrame.firstOrNull()?.timestampMs ?: 0L
-                    if (currentTimestamp - lastTimestamp > 1200L) {
+                    if (sortedFrameIndices.last() - frameIdx > 2) {
                         tracksToRemove.add(trackIdx)
                     }
                 }
@@ -68,7 +72,7 @@ class AppearanceSegmentTracker {
                 }
             }
 
-            for ((faceIdx, face) in facesInFrame.withIndex()) {
+            for ((faceIdx, face) in sortedFaces.withIndex()) {
                 if (!assignedFaceIndices.contains(faceIdx)) {
                     activeTracks.add(
                         MutableTrack(
@@ -90,27 +94,82 @@ class AppearanceSegmentTracker {
         return completedTracks
     }
 
-    private fun convertToAppearanceTrack(track: MutableTrack): AppearanceTrack? {
-        if (track.frames.isEmpty()) {
-            return null
+    private fun computeTrackingScore(
+        iou: Float,
+        timeDeltaMs: Long,
+        face: FaceFrameInfo,
+        lastFace: FaceFrameInfo
+    ): Float {
+        val iouScore = iou.coerceIn(0f, 1f)
+        val timeDecay = if (timeDeltaMs <= 200L) 1.0f else {
+            kotlin.math.exp(-timeDeltaMs.toFloat() / 500f)
         }
+        val sizeDiff = 1.0f - kotlin.math.min(1f, kotlin.math.abs(face.faceWidth - lastFace.faceWidth).toFloat() / kotlin.math.max(face.faceWidth, lastFace.faceWidth))
+        val qualityBonus = face.overallQualityScore
+
+        return (0.4f * iouScore + 0.3f * timeDecay + 0.15f * sizeDiff + 0.15f * qualityBonus)
+    }
+
+    private fun convertToAppearanceTrack(track: MutableTrack): AppearanceTrack? {
+        if (track.frames.isEmpty()) return null
 
         val startMs = track.frames.first().timestampMs
         val endMs = track.frames.last().timestampMs
         val durationMs = endMs - startMs
 
         val avgSharpness = track.frames.map { it.sharpnessScore }.average()
-        if (avgSharpness < 2.0) {
-            return null
-        }
+        if (avgSharpness < FaceConfig.minSharpness) return null
+
+        val goodFrames = track.frames.filter { it.overallQualityScore >= FaceConfig.minQuality }
+        if (goodFrames.isEmpty()) return null
+
+        val segments = computeTemporalSegments(goodFrames)
 
         return AppearanceTrack(
             trackId = track.trackId,
             frames = track.frames,
             startTimeMs = startMs,
             endTimeMs = endMs,
-            durationMs = durationMs
+            durationMs = durationMs,
+            segments = segments
         )
+    }
+
+    private fun computeTemporalSegments(frames: List<FaceFrameInfo>): List<AppearanceSegment> {
+        if (frames.isEmpty()) return emptyList()
+
+        val segments = mutableListOf<AppearanceSegment>()
+        var segStart = frames[0]
+        var prevFrame = frames[0]
+
+        for (i in 1 until frames.size) {
+            val current = frames[i]
+            if (current.timestampMs - prevFrame.timestampMs > FaceConfig.appearanceGapMs) {
+                segments.add(
+                    AppearanceSegment(
+                        startFrameIndex = segStart.frameIndex,
+                        endFrameIndex = prevFrame.frameIndex,
+                        startTimestampMs = segStart.timestampMs,
+                        endTimestampMs = prevFrame.timestampMs,
+                        frameCount = prevFrame.frameIndex - segStart.frameIndex + 1
+                    )
+                )
+                segStart = current
+            }
+            prevFrame = current
+        }
+
+        segments.add(
+            AppearanceSegment(
+                startFrameIndex = segStart.frameIndex,
+                endFrameIndex = prevFrame.frameIndex,
+                startTimestampMs = segStart.timestampMs,
+                endTimestampMs = prevFrame.timestampMs,
+                frameCount = prevFrame.frameIndex - segStart.frameIndex + 1
+            )
+        )
+
+        return segments
     }
 
     private fun calculateIoU(rect1: Rect, rect2: Rect): Float {

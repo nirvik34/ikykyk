@@ -91,7 +91,7 @@ class MainViewModel : ViewModel() {
             val newBitmap = withContext(Dispatchers.Default) {
                 renderer.renderCollage(
                     identities = currentResult.identities,
-                    layoutTemplate = template
+                    template = template
                 )
             }
 
